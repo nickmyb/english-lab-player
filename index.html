@@ -1,0 +1,3484 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover" />
+  <meta name="apple-mobile-web-app-capable" content="yes" />
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent" />
+  <meta name="apple-mobile-web-app-title" content="EnglishLab" />
+  <meta name="theme-color" content="#0b1020" />
+  <link rel="manifest" href="manifest.json" />
+  <link rel="icon" type="image/svg+xml" href="icon.svg" />
+  <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
+  <title>English Lab Player</title>
+  <style>
+    :root {
+      --bg: #0b1020;
+      --surface: #131a2d;
+      --surface-2: #1a233a;
+      --border: #283552;
+      --text: #f1f5f9;
+      --muted: #94a3b8;
+      --accent: #38bdf8;
+      --green: #10b981;
+      --amber: #f59e0b;
+      --red: #f43f5e;
+      --fuchsia: #d946ef;
+      --spot-bg-1: #16143d;
+      --spot-bg-2: #1e1b4b;
+      --spot-border: #818cf8;
+      --radius: 14px;
+      --font-sans: -apple-system, BlinkMacSystemFont, "SF Pro Text", "PingFang SC", "Helvetica Neue", "Segoe UI", Roboto, sans-serif;
+      --font-mono: "SF Mono", ui-monospace, Menlo, Consolas, monospace;
+    }
+
+    * { box-sizing: border-box; -webkit-tap-highlight-color: transparent; }
+
+    html, body {
+      margin: 0;
+      padding: 0;
+      background: var(--bg);
+      color: var(--text);
+      font-family: var(--font-sans);
+      line-height: 1.5;
+      min-height: 100%;
+    }
+
+    body {
+      padding: max(12px, env(safe-area-inset-top)) 12px max(28px, env(safe-area-inset-bottom));
+    }
+
+    .app {
+      max-width: 820px;
+      margin: 0 auto;
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+
+    button, select, input, textarea {
+      font-family: inherit;
+      font-size: 16px;
+      color: var(--text);
+      touch-action: manipulation;
+    }
+
+    button {
+      cursor: pointer;
+      border: 1px solid var(--border);
+      background: var(--surface-2);
+      border-radius: 10px;
+      padding: 10px 14px;
+      min-height: 44px;
+      font-weight: 600;
+      transition: transform 0.08s ease, background 0.15s ease, border-color 0.15s ease;
+    }
+
+    button:active { transform: scale(0.98); }
+    button:disabled { opacity: 0.45; cursor: not-allowed; transform: none; }
+
+    .btn-primary { background: #0369a1; border-color: #38bdf8; color: #ffffff; }
+    .btn-green { background: #047857; border-color: #34d399; color: #ffffff; }
+    .btn-amber { background: #92400e; border-color: #fbbf24; color: #ffffff; }
+    .btn-danger { background: #9f1239; border-color: #fb7185; color: #ffffff; }
+    .btn-purple { background: #6b21a8; border-color: #e879f9; color: #ffffff; }
+    .btn-sm { min-height: 36px; padding: 6px 11px; font-size: 14px; border-radius: 8px; }
+
+    .card {
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 14px;
+    }
+
+    /* Clean text pill badges */
+    .badge {
+      display: inline-flex;
+      align-items: center;
+      padding: 2px 8px;
+      border-radius: 6px;
+      font-family: var(--font-mono);
+      font-size: 11px;
+      font-weight: 700;
+      letter-spacing: 0.03em;
+      white-space: nowrap;
+      vertical-align: middle;
+    }
+
+    .badge-lan { background: #064e3b; color: #6ee7b7; border: 1px solid #10b981; }
+    .badge-gh { background: #3b0764; color: #e9d5ff; border: 1px solid #a855f7; }
+    .badge-offline { background: #1e293b; color: #cbd5e1; border: 1px solid #475569; }
+    .badge-core { background: #164e63; color: #67e8f9; border: 1px solid #22d3ee; }
+    .badge-gold { background: #065f46; color: #6ee7b7; border: 1px solid #34d399; }
+    .badge-trap { background: #78350f; color: #fde68a; border: 1px solid #f59e0b; }
+    .badge-star { background: #701a75; color: #f5d0fe; border: 1px solid #e879f9; }
+    .badge-miss { background: #881337; color: #fecdd3; border: 1px solid #fb7185; }
+    .badge-ok { background: #14532d; color: #bbf7d0; border: 1px solid #4ade80; }
+
+    /* Top Bar */
+    .topbar {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    .brand {
+      display: flex;
+      align-items: center;
+      gap: 8px;
+      font-weight: 800;
+      font-size: 17px;
+      letter-spacing: 0.02em;
+    }
+
+    .topbar-right {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      flex-wrap: wrap;
+    }
+
+    .focus-banner {
+      background: #0f1b33;
+      border: 1px solid #2b4168;
+      border-left: 3px solid #a855f7;
+      border-radius: 10px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #e2e8f0;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* Drawers & Inputs */
+    .source-tabs {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 12px;
+    }
+    .source-tabs button { flex: 1; min-height: 40px; font-size: 14px; }
+    .source-tabs button.active { background: #1e3a5f; border-color: var(--accent); color: #ffffff; }
+
+    .form-grid { display: grid; grid-template-columns: 1fr; gap: 10px; }
+    @media (min-width: 600px) {
+      .form-grid-2 { grid-template-columns: 1fr 1fr; }
+      .form-grid-lib { grid-template-columns: 160px 1fr; }
+    }
+
+    label.field-label {
+      display: block;
+      font-size: 12px;
+      font-weight: 700;
+      color: var(--muted);
+      margin-bottom: 4px;
+    }
+
+    select, input[type="text"], input[type="password"], textarea.std-ta {
+      width: 100%;
+      background: #0d1424;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 10px 12px;
+      min-height: 44px;
+    }
+
+    textarea.std-ta { min-height: 76px; resize: vertical; line-height: 1.45; }
+    select:focus, input:focus, textarea:focus { outline: 2px solid var(--accent); outline-offset: 1px; }
+
+    .file-drop {
+      border: 2px dashed #3b4f78;
+      border-radius: 12px;
+      padding: 18px 14px;
+      text-align: center;
+      background: #0e1526;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 10px;
+    }
+    .file-drop input[type="file"] { display: none; }
+
+    .muted { color: var(--muted); font-size: 13px; }
+    .sec-title { font-weight: 800; font-size: 15px; margin: 0 0 8px; color: #f8fafc; }
+    .divider { border: 0; border-top: 1px solid var(--border); margin: 14px 0; }
+
+    /* Lesson Info + Timer Strip */
+    .lesson-bar { display: flex; flex-direction: column; gap: 10px; }
+    .lesson-head { display: flex; align-items: center; justify-content: space-between; gap: 10px; flex-wrap: wrap; }
+    .lesson-title { font-weight: 700; font-size: 16px; word-break: break-word; }
+
+    .timer-box {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      background: #0d1424;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 4px 8px;
+    }
+    .timer-digits {
+      font-family: var(--font-mono);
+      font-size: 17px;
+      font-weight: 800;
+      min-width: 58px;
+      text-align: center;
+      color: #7dd3fc;
+    }
+    .timer-digits.warn { color: #fbbf24; }
+    .timer-digits.done { color: #fb7185; }
+
+    .grammar-strip {
+      background: #0e192d;
+      border-left: 3px solid #22d3ee;
+      border-radius: 8px;
+      padding: 8px 12px;
+      font-size: 13px;
+      color: #cbd5e1;
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+      flex-wrap: wrap;
+    }
+
+    /* 5-Step Tabs */
+    .step-tabs { display: grid; grid-template-columns: repeat(5, 1fr); gap: 6px; }
+    .step-tab {
+      min-height: 52px;
+      padding: 6px 4px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2px;
+      font-size: 12px;
+      line-height: 1.2;
+      background: var(--surface);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      color: var(--muted);
+    }
+    .step-tab strong { font-size: 13px; color: var(--text); }
+    .step-tab.active {
+      background: #172554;
+      border-color: #60a5fa;
+      color: #bfdbfe;
+      box-shadow: 0 0 0 1px #60a5fa inset;
+    }
+    .step-tab.active strong { color: #ffffff; }
+
+    /* Buttons & Speed */
+    .btn-row { display: flex; gap: 8px; flex-wrap: wrap; }
+    .btn-row > button { flex: 1 1 110px; }
+
+    .speed-row { display: flex; align-items: center; gap: 6px; flex-wrap: wrap; }
+    .speed-pill {
+      min-height: 34px;
+      padding: 4px 10px;
+      font-size: 13px;
+      font-family: var(--font-mono);
+      border-radius: 999px;
+      background: #0d1424;
+    }
+    .speed-pill.active { background: #0369a1; border-color: #38bdf8; color: #ffffff; }
+
+    /* Progress Bar */
+    .progress-wrap { display: flex; flex-direction: column; gap: 6px; }
+    .progress-meta { display: flex; justify-content: space-between; font-family: var(--font-mono); font-size: 13px; color: var(--muted); }
+    input[type="range"] { width: 100%; accent-color: #38bdf8; height: 28px; margin: 0; }
+
+    /* Step 2 Dictation */
+    .dict-head { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px; }
+    .dict-input {
+      width: 100%;
+      min-height: 82px;
+      background: #090e1a;
+      border: 2px solid #334155;
+      border-radius: 12px;
+      padding: 12px 14px;
+      font-size: 18px;
+      line-height: 1.45;
+      resize: vertical;
+    }
+    .dict-input:focus { border-color: #38bdf8; outline: none; }
+
+    .chip-grid { display: flex; flex-wrap: wrap; gap: 6px; margin-top: 10px; }
+    .sent-chip {
+      min-height: 34px;
+      min-width: 38px;
+      padding: 4px 8px;
+      font-family: var(--font-mono);
+      font-size: 13px;
+      border-radius: 8px;
+      background: #0e1526;
+      border: 1px solid var(--border);
+      color: var(--muted);
+    }
+    .sent-chip.filled { background: #064e3b; border-color: #10b981; color: #d1fae5; }
+    .sent-chip.stuck { border-color: #f59e0b; color: #fde68a; }
+    .sent-chip.current { background: #1d4ed8; border-color: #93c5fd; color: #ffffff; font-weight: 800; }
+
+    /* Step 3 Red-Pen Diff */
+    .stats-banner {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      flex-wrap: wrap;
+      gap: 10px;
+      background: #0e1526;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px 14px;
+      margin-bottom: 12px;
+    }
+    .stat-big { font-family: var(--font-mono); font-size: 22px; font-weight: 800; color: #34d399; }
+
+    .review-list { display: flex; flex-direction: column; gap: 10px; }
+    .review-item {
+      background: #0e1526;
+      border: 1px solid var(--border);
+      border-radius: 12px;
+      padding: 12px;
+      display: flex;
+      flex-direction: column;
+      gap: 8px;
+    }
+    .review-item.has-err { border-left: 4px solid var(--red); }
+    .review-item.is-ok { border-left: 4px solid var(--green); }
+    .review-top { display: flex; justify-content: space-between; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+    .diff-line { font-size: 16px; line-height: 1.65; word-break: break-word; }
+    .diff-ok { color: #86efac; }
+    .diff-rep { background: rgba(244, 63, 94, 0.2); color: #fda4af; padding: 1px 5px; border-radius: 5px; font-weight: 700; }
+    .diff-miss { background: rgba(245, 158, 11, 0.22); color: #fde68a; padding: 1px 5px; border-radius: 5px; font-weight: 700; }
+    .diff-ins { color: #94a3b8; text-decoration: line-through; font-size: 14px; }
+
+    .ref-sub { font-size: 14px; color: #cbd5e1; background: #131c31; padding: 6px 10px; border-radius: 8px; }
+    .note-box {
+      font-size: 13px;
+      color: #e2e8f0;
+      background: rgba(30, 41, 59, 0.75);
+      border-left: 3px solid #f59e0b;
+      padding: 7px 10px;
+      border-radius: 6px;
+    }
+
+    /* Step 4 HERO SPOTLIGHT CARD & 1-3-7 FLASHCARD */
+    .spotlight-card {
+      background: linear-gradient(155deg, var(--spot-bg-1) 0%, var(--spot-bg-2) 55%, #172554 100%);
+      border: 2px solid var(--spot-border);
+      border-radius: 16px;
+      padding: 18px 16px;
+      box-shadow: 0 10px 28px rgba(15, 23, 42, 0.55);
+      display: flex;
+      flex-direction: column;
+      gap: 12px;
+    }
+    .spotlight-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      border-bottom: 1px solid rgba(129, 140, 248, 0.35);
+      padding-bottom: 10px;
+    }
+    .spotlight-label { font-family: var(--font-mono); font-size: 12px; font-weight: 800; color: #c7d2fe; letter-spacing: 0.06em; }
+    .karaoke-ctx { font-size: 14px; color: #94a3b8; line-height: 1.45; padding-left: 10px; border-left: 2px solid rgba(148, 163, 184, 0.3); }
+    .spotlight-main { font-size: clamp(21px, 5.4vw, 27px); font-weight: 800; color: #ffffff; line-height: 1.5; letter-spacing: 0.01em; padding: 8px 4px; word-break: break-word; }
+    .spot-miss-word { background: #facc15; color: #0f172a; padding: 1px 6px; border-radius: 6px; font-weight: 900; }
+    .spotlight-hidden { text-align: center; padding: 20px 10px; color: #a5b4fc; font-size: 15px; border: 1px dashed rgba(165, 180, 252, 0.45); border-radius: 10px; }
+    .spotlight-note {
+      background: rgba(15, 23, 42, 0.65);
+      border: 1px solid rgba(129, 140, 248, 0.35);
+      border-radius: 10px;
+      padding: 10px 12px;
+      font-size: 14px;
+      color: #e2e8f0;
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+    }
+
+    /* 1-3-7 Spaced Review Stats Grid */
+    .kpi-grid {
+      display: grid;
+      grid-template-columns: repeat(4, 1fr);
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+    .kpi-box {
+      background: #0e1526;
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 8px 6px;
+      text-align: center;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      min-height: 0;
+    }
+    .kpi-box.kpi-clickable {
+      cursor: pointer;
+      transition: transform 0.1s ease, border-color 0.15s ease, background 0.15s ease, box-shadow 0.15s ease;
+    }
+    .kpi-box.kpi-clickable:active { transform: scale(0.96); }
+    .kpi-box.kpi-active {
+      background: #172554;
+      border-color: #38bdf8;
+      box-shadow: 0 0 0 1px rgba(56, 189, 248, 0.5) inset;
+    }
+    .kpi-val { font-family: var(--font-mono); font-size: 20px; font-weight: 800; color: #f8fafc; line-height: 1.25; }
+    .kpi-lbl { font-size: 11px; color: var(--muted); }
+
+    .review-mode-tabs {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 6px;
+      margin-bottom: 10px;
+    }
+    .review-mode-tabs button {
+      min-height: 40px;
+      padding: 6px 6px;
+      font-size: 13px;
+      white-space: nowrap;
+    }
+    @keyframes fcPulse {
+      0% { transform: scale(0.985); box-shadow: 0 0 0 0 rgba(56, 189, 248, 0.55); border-color: #38bdf8; }
+      50% { transform: scale(1.01); box-shadow: 0 0 0 8px rgba(56, 189, 248, 0); border-color: #7dd3fc; }
+      100% { transform: scale(1); box-shadow: 0 10px 28px rgba(15, 23, 42, 0.55); border-color: var(--spot-border); }
+    }
+    .fc-pulse { animation: fcPulse 0.38s cubic-bezier(0.22, 1, 0.36, 1); }
+
+    /* Status Toast */
+    .status-bar {
+      background: #10192c;
+      border: 1px solid #2a3a5e;
+      border-radius: 10px;
+      padding: 9px 12px;
+      font-size: 13px;
+      color: #fde68a;
+      min-height: 38px;
+      display: flex;
+      align-items: center;
+    }
+
+    /* Floating Top Animated Toast (always visible on mobile!) */
+    .toast-banner {
+      position: fixed;
+      top: max(12px, env(safe-area-inset-top));
+      left: 50%;
+      transform: translate(-50%, -140%);
+      opacity: 0;
+      z-index: 9999;
+      max-width: min(92vw, 560px);
+      padding: 11px 16px;
+      border-radius: 12px;
+      font-size: 14px;
+      font-weight: 700;
+      line-height: 1.4;
+      color: #ffffff;
+      background: #0369a1;
+      border: 1px solid #38bdf8;
+      box-shadow: 0 12px 32px rgba(2, 6, 23, 0.72);
+      pointer-events: none;
+      transition: transform 0.28s cubic-bezier(0.22, 1, 0.36, 1), opacity 0.24s ease;
+    }
+    .toast-banner.show {
+      transform: translate(-50%, 0);
+      opacity: 1;
+    }
+    .toast-banner.ok { background: #065f46; border-color: #34d399; color: #ecfdf5; }
+    .toast-banner.warn { background: #92400e; border-color: #fbbf24; color: #fffbeb; }
+    .toast-banner.err { background: #9f1239; border-color: #fb7185; color: #fff1f2; }
+
+    .btn-busy { opacity: 0.72; pointer-events: none; }
+
+    .hidden { display: none !important; }
+  </style>
+</head>
+<body>
+  <div id="toastBanner" class="toast-banner" role="status" aria-live="polite"></div>
+  <div class="app">
+    <!-- Top Header -->
+    <div class="card topbar">
+      <div class="brand">
+        <span>ENGLISH LAB</span>
+        <span id="modeBadge" class="badge badge-offline">OFFLINE PWA</span>
+      </div>
+      <div class="topbar-right">
+        <button id="toggleReviewBtn" class="btn-sm" type="button">1-3-7 复习 (0)</button>
+        <button id="toggleSourceBtn" class="btn-sm btn-primary" type="button">导入 / 选课</button>
+        <button id="toggleSettingsBtn" class="btn-sm" type="button">设置 / GitHub</button>
+      </div>
+    </div>
+
+    <!-- Optional Personal Focus Strip (only shown when user has configured personal profile / GitHub sync) -->
+    <div id="focusBanner" class="focus-banner hidden">
+      <span id="focusBannerText"></span>
+      <button id="quickSyncBtn" class="btn-sm btn-purple hidden" type="button">同步 GitHub</button>
+    </div>
+
+    <!-- Settings & Private GitHub Sync Drawer -->
+    <div id="settingsDrawer" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:10px;">
+        <strong style="font-size:16px;">个人定制 & GitHub 数据同步</strong>
+        <button id="closeSettingsBtn" class="btn-sm" type="button">收起</button>
+      </div>
+      <p class="muted" style="margin:0 0 12px;">
+        本播放器本身面向所有人通用；你可以把个人学习主题、定制笔记、听写报告与 1-3-7 复习进度保存在<strong>你自己的 GitHub 私有仓库</strong>里，跨手机/电脑持续同步。
+      </p>
+
+      <div class="form-grid form-grid-2" style="margin-bottom:10px;">
+        <div>
+          <label class="field-label" for="ghRepoInput">GitHub 仓库（owner/repo）</label>
+          <input id="ghRepoInput" type="text" placeholder="例如 username/my-english-lab" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        </div>
+        <div>
+          <label class="field-label" for="ghBranchInput">分支（Branch）</label>
+          <input id="ghBranchInput" type="text" value="main" placeholder="main" autocomplete="off" autocapitalize="off" spellcheck="false" />
+        </div>
+      </div>
+      <div style="margin-bottom:10px;">
+        <label class="field-label" for="ghTokenInput">GitHub Fine-grained Token（仅需该仓库 Contents 读写权限；仅存于本机浏览器）</label>
+        <input id="ghTokenInput" type="password" placeholder="github_pat_..." autocomplete="off" />
+      </div>
+      <div class="btn-row" style="margin-bottom:12px;">
+        <button id="ghPullBtn" class="btn-primary" type="button">连接并拉取个人数据</button>
+        <button id="ghPushReviewBtn" class="btn-green" type="button">同步 1-3-7 复习到 GitHub</button>
+        <button id="ghDisconnectBtn" class="btn-danger" type="button">断开并清除 Token</button>
+      </div>
+      <div id="ghSyncStatus" class="muted" style="margin-bottom:4px;">未连接 GitHub（当前使用浏览器本地存储 + 通用教材注释）。</div>
+
+      <hr class="divider" />
+      <p class="sec-title">自定义学习风格 & AI 语音教练设定</p>
+      <div class="form-grid" style="margin-bottom:10px;">
+        <div>
+          <label class="field-label" for="profileFocusInput">当前学习阶段 / 主题（选填）</label>
+          <input id="profileFocusInput" type="text" placeholder="例如：日常口语提升 / 旅行实战 / 英语面试准备" />
+        </div>
+        <div>
+          <label class="field-label" for="profileAiContextInput">AI 语音教练默认场景说明（复制给 AI 时自动带上）</label>
+          <textarea id="profileAiContextInput" class="std-ta" placeholder="例如：请把下面这些我卡壳或收藏的句子自然融入日常情景对话里考我（不显示文字，纯语音互动）。"></textarea>
+        </div>
+      </div>
+      <div class="btn-row">
+        <button id="saveProfileLocalBtn" class="btn-primary" type="button">保存到本机</button>
+        <button id="saveProfileGhBtn" class="btn-purple hidden" type="button">保存风格到 GitHub (profile/player-profile.json)</button>
+      </div>
+    </div>
+
+    <!-- 1-3-7-14 Spaced Active-Recall Review View -->
+    <div id="reviewView" class="card hidden">
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        <div>
+          <strong style="font-size:17px;">1-3-7-14 遗忘曲线主动提取复习</strong>
+          <div class="muted">每天 5 分钟（<=8 句）：看中文 3 秒脱口而出，彻底告别“刷完就忘”</div>
+        </div>
+        <button id="closeReviewBtn" class="btn-sm" type="button">返回播放</button>
+      </div>
+
+      <div class="kpi-grid">
+        <div class="kpi-box"><div id="rvTotal" class="kpi-val">0</div><div class="kpi-lbl">累计词条</div></div>
+        <button id="kpiDueBtn" class="kpi-box kpi-clickable" type="button"><div id="rvDue" class="kpi-val" style="color:#fbbf24;">0</div><div class="kpi-lbl">今日待刷</div></button>
+        <div class="kpi-box"><div id="rvMastered" class="kpi-val" style="color:#34d399;">0</div><div class="kpi-lbl">稳固 (3阶+)</div></div>
+        <button id="kpiStubbornBtn" class="kpi-box kpi-clickable" type="button"><div id="rvStubbornCount" class="kpi-val" style="color:#fb7185;">0</div><div class="kpi-lbl">顽固卡壳</div></button>
+      </div>
+
+      <!-- Review Mode Tabs (directly above flashcard with dynamic active highlight) -->
+      <div class="review-mode-tabs">
+        <button id="rvStartDueBtn" class="btn-sm" type="button">今日待刷</button>
+        <button id="rvStartTodayBtn" class="btn-sm" type="button">当晚回炉</button>
+        <button id="rvStartNowBtn" class="btn-sm" type="button">提前抽查</button>
+      </div>
+
+      <!-- Flashcard Arena -->
+      <div id="flashcardBox" class="spotlight-card" style="margin-bottom:12px;">
+        <div class="spotlight-top">
+          <span class="spotlight-label" id="fcProgress">闪卡就绪</span>
+          <div id="fcBadges" style="display:flex;gap:6px;flex-wrap:wrap;"></div>
+        </div>
+        <div id="fcPromptArea" class="spotlight-main" style="font-size:clamp(19px,4.8vw,24px);"></div>
+        <div id="fcAnswerArea" class="hidden">
+          <div id="fcAnswerEn" style="font-size:clamp(20px,5vw,25px);font-weight:800;color:#86efac;padding:6px 0;"></div>
+          <div id="fcAnswerNote" class="spotlight-note hidden"></div>
+        </div>
+        <div id="fcFrontActions" class="btn-row">
+          <button id="fcPlayClipBtn" class="btn-sm hidden" type="button">盲听原句</button>
+          <button id="fcRevealBtn" class="btn-primary" type="button">3秒说出英文 -> 看答案</button>
+          <button id="fcSkipBtn" class="btn-sm" type="button">跳过</button>
+        </div>
+        <div id="fcBackActions" class="btn-row hidden">
+          <button id="fcPassBtn" class="btn-green" type="button">3秒秒过 -> 晋级</button>
+          <button id="fcFailBtn" class="btn-danger" type="button">卡壳/慢了 -> 明天再滚</button>
+        </div>
+      </div>
+
+      <!-- Review Utility Actions & Seeding -->
+      <div class="btn-row" style="margin-bottom:10px;">
+        <button id="rvCopyAiBtn" class="btn-purple" type="button">复制给 AI 教练</button>
+        <button id="rvSyncGhBtn" class="btn-green hidden" type="button">同步到 GitHub</button>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-bottom:10px;">
+        <input id="rvSeedInput" type="text" placeholder="按课号批量导入黄金句（如 1-11 或 13-23）" style="flex:1 1 200px;" />
+        <button id="rvSeedTomorrowBtn" class="btn-sm" type="button">入队 (明天复习)</button>
+        <button id="rvSeedNowBtn" class="btn-sm btn-primary" type="button">入队并立刻刷</button>
+      </div>
+
+      <!-- Quick Vocab / Unknown Word Logger directly inside 1-3-7 Review (usable anytime, no MP3 required!) -->
+      <div style="background:#0e1526;border:1px solid var(--border);border-radius:10px;padding:10px;margin-bottom:10px;">
+        <div class="muted" style="margin-bottom:6px;color:#e2e8f0;font-weight:700;">随时记一个不认识的生词 / 不会写的词 / 模糊词（自动入 1-3-7 并同步 GitHub）：</div>
+        <div class="form-grid form-grid-2" style="margin-bottom:8px;">
+          <input id="rvVocabWord" type="text" placeholder="英文生词/短语（如：clerk / thirsty / glasses）" autocomplete="off" />
+          <input id="rvVocabMeaning" type="text" placeholder="中文意思 / 拼写提示或对比词（如：文员 / 口渴的）" />
+        </div>
+        <button id="rvVocabSaveBtn" class="btn-sm btn-purple" type="button" style="width:100%;">记入生词本 & 加入 1-3-7 复习</button>
+      </div>
+
+      <div id="rvStubbornWrap" class="hidden" style="margin-top:10px;">
+        <div class="muted" style="margin-bottom:6px;">顽固卡壳 Top 5（建议周末挑对应课文开 1.15x 倍速盲听回炉体检）：</div>
+        <div id="rvStubbornList" class="review-list"></div>
+      </div>
+
+      <div style="display:flex;gap:8px;flex-wrap:wrap;margin-top:12px;padding-top:10px;border-top:1px solid var(--border);">
+        <button id="rvExportJsonBtn" class="btn-sm" type="button">导出复习备份 JSON</button>
+        <button id="rvImportJsonBtn" class="btn-sm" type="button">导入备份 JSON</button>
+        <input id="rvImportFileInput" type="file" accept=".json,application/json" class="hidden" />
+      </div>
+    </div>
+
+    <!-- Source Picker Drawer (Smart: hides LAN tab cleanly when no local server is present!) -->
+    <div id="sourceDrawer" class="card">
+      <div id="sourceTabsBar" class="source-tabs hidden">
+        <button id="tabServer" type="button">局域网书库</button>
+        <button id="tabLocal" type="button">本地 / iCloud 导入</button>
+      </div>
+
+      <!-- Local LAN Server Panel (only revealed when local web_server.py is detected) -->
+      <div id="serverPanel" class="hidden">
+        <div class="form-grid form-grid-lib" style="margin-bottom: 10px;">
+          <select id="libSelect" aria-label="选择教材库"></select>
+          <input id="lessonFilter" type="text" placeholder="快速筛选课号/文件名（如 1、75、107）" />
+        </div>
+        <div style="display: flex; gap: 8px;">
+          <select id="lessonSelect" aria-label="选择课文"></select>
+          <button id="loadServerBtn" class="btn-primary" type="button" style="flex-shrink: 0;">加载课文</button>
+        </div>
+        <p class="muted" style="margin: 8px 0 0;">
+          已连接本地局域网服务：流式播放（支持 iOS Safari 精准定位），听写报告与收藏可直接保存回本地目录。
+        </p>
+      </div>
+
+      <!-- Offline Local / iCloud Panel (Default clean view for all users) -->
+      <div id="localPanel">
+        <div class="file-drop">
+          <button id="pickLocalBtn" class="btn-primary" type="button">选择本地 / iCloud 音频与字幕（MP3 + LRC）</button>
+          <input id="localFileInput" type="file" multiple />
+          <div class="muted">
+            支持一次多选一个或多个音频（<strong>.mp3 / .m4a / .wav</strong>）与同名 <strong>.lrc / .srt</strong> 自动配对。<br />
+            100% 浏览器本地离线运行，音频不会上传至任何服务器。
+          </div>
+        </div>
+        <div id="localPlaylistWrap" class="hidden" style="margin-top: 10px; display: flex; gap: 8px;">
+          <select id="localPlaylistSelect" aria-label="已导入课文列表"></select>
+          <button id="loadLocalItemBtn" class="btn-primary" type="button" style="flex-shrink: 0;">切换</button>
+        </div>
+      </div>
+    </div>
+
+    <!-- Active Lesson & Timer Bar -->
+    <div id="lessonBar" class="card lesson-bar hidden">
+      <div class="lesson-head">
+        <div>
+          <div id="lessonTitle" class="lesson-title">未加载课文</div>
+          <div id="lessonSub" class="muted">0 句 | 00:00</div>
+        </div>
+        <div class="timer-box">
+          <span id="timerDisplay" class="timer-digits">02:00</span>
+          <button id="timerToggleBtn" class="btn-sm btn-primary" type="button">计时</button>
+          <button id="timerResetBtn" class="btn-sm" type="button">重置</button>
+        </div>
+      </div>
+      <div id="grammarStrip" class="grammar-strip hidden"></div>
+    </div>
+
+    <!-- 5-Step Tabs -->
+    <div id="stepTabs" class="step-tabs hidden">
+      <button class="step-tab active" data-step="0" type="button"><strong>1 盲听</strong><span>2m</span></button>
+      <button class="step-tab" data-step="1" type="button"><strong>2 听写</strong><span>8m</span></button>
+      <button class="step-tab" data-step="2" type="button"><strong>3 诊断</strong><span>5m</span></button>
+      <button class="step-tab" data-step="3" type="button"><strong>4 跟读</strong><span>10m</span></button>
+      <button class="step-tab" data-step="4" type="button"><strong>5 速记</strong><span>5m</span></button>
+    </div>
+
+    <!-- Step 1: Blind Listen -->
+    <div id="stepPanel0" class="card hidden">
+      <div class="progress-wrap" style="margin-bottom: 14px;">
+        <div class="progress-meta">
+          <span id="fullTimeCur">00:00</span>
+          <span id="fullSentIndicator">第 01 / 01 句（盲听隐藏原文）</span>
+          <span id="fullTimeDur">00:00</span>
+        </div>
+        <input id="seekBar" type="range" min="0" max="100" step="0.05" value="0" aria-label="音频进度条" />
+      </div>
+      <div class="btn-row" style="margin-bottom: 12px;">
+        <button id="playFullBtn" class="btn-primary" type="button">从头整篇播</button>
+        <button id="pauseBtn1" class="btn-amber" type="button">暂停</button>
+        <button id="continueBtn1" class="btn-green" type="button">继续播放</button>
+      </div>
+      <div class="speed-row" id="speedRow1" style="margin-bottom: 14px;"></div>
+      <button id="goStep2Btn" class="btn-green" type="button" style="width: 100%;">听完一遍 -> 进入 Step 2（8 分钟限时听写）</button>
+    </div>
+
+    <!-- Step 2: Timed Dictation -->
+    <div id="stepPanel1" class="card hidden">
+      <div class="dict-head">
+        <div>
+          <strong id="dictSentLabel" style="font-size: 17px;">第 01 / 01 句</strong>
+          <span id="dictSentTime" class="muted" style="margin-left: 6px; font-family: var(--font-mono);">00:00-00:00</span>
+        </div>
+        <span id="dictPlayBadge" class="badge badge-offline">已听 0/2 遍</span>
+      </div>
+      <textarea
+        id="dictInput"
+        class="dict-input"
+        rows="2"
+        placeholder="听本句并直接打字；听不出先打 ___ 跳过（Enter 保存并播下句，Tab 重播本句）"
+        autocomplete="off"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        enterkeyhint="next"
+      ></textarea>
+      <div class="btn-row" style="margin-top: 10px;">
+        <button id="dictReplayBtn" class="btn-primary" type="button">重播本句</button>
+        <button id="dictBlankBtn" type="button">不会填 ___</button>
+        <button id="dictNextBtn" class="btn-green" type="button">保存并播下句</button>
+      </div>
+      <div class="btn-row" style="margin-top: 8px;">
+        <button id="dictPrevBtn" class="btn-sm" type="button">上一句</button>
+        <button id="dictPauseBtn" class="btn-sm" type="button">暂停</button>
+        <button id="goStep3Btn" class="btn-sm btn-amber" type="button">完成听写 -> 红笔诊断</button>
+      </div>
+      <div class="muted" style="margin-top: 12px;">快速跳句（绿=已填，橙框=重播>=3遍）：</div>
+      <div id="dictChipGrid" class="chip-grid"></div>
+    </div>
+
+    <!-- Step 3: Red-Pen Diagnosis -->
+    <div id="stepPanel2" class="card hidden">
+      <div class="stats-banner">
+        <div>
+          <div class="muted">自动红笔诊断准确率</div>
+          <div id="reviewAcc" class="stat-big">--</div>
+          <div id="reviewDetail" class="muted">请先在 Step 2 输入听写内容</div>
+        </div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="toggleErrOnlyBtn" class="btn-sm btn-primary" type="button">仅看错句</button>
+          <button id="goStep4Btn" class="btn-sm btn-green" type="button">去逐句跟读 -></button>
+        </div>
+      </div>
+      <div id="reviewList" class="review-list"></div>
+    </div>
+
+    <!-- Step 4: Shadowing with Hero Spotlight Card -->
+    <div id="stepPanel3" class="card hidden">
+      <div class="spotlight-card">
+        <div class="spotlight-top">
+          <span class="spotlight-label">SPOTLIGHT 参考原文 · <span id="spotCounter">01 / 01</span></span>
+          <div id="spotBadges" style="display: flex; gap: 6px; flex-wrap: wrap;"></div>
+        </div>
+        <div id="spotBody">
+          <div id="spotPrev" class="karaoke-ctx"></div>
+          <div id="spotMain" class="spotlight-main"></div>
+          <div id="spotNext" class="karaoke-ctx"></div>
+        </div>
+        <div id="spotHiddenBox" class="spotlight-hidden hidden">
+          原文已隐藏（盲听跟读模式）— 点击下方「显示原文」随时核对
+        </div>
+        <div id="spotNoteBox" class="spotlight-note hidden"></div>
+        <div style="display: flex; gap: 8px; flex-wrap: wrap;">
+          <button id="toggleSpotTextBtn" class="btn-sm" type="button">隐藏原文</button>
+          <button id="spotBookmarkBtn" class="btn-sm" type="button">收藏 STAR</button>
+          <span id="spotTimeBadge" class="muted" style="margin-left: auto; align-self: center; font-family: var(--font-mono);">00:00-00:00</span>
+        </div>
+      </div>
+
+      <div class="btn-row" style="margin-top: 12px;">
+        <button id="shadPrevBtn" type="button">上一句</button>
+        <button id="shadPlayBtn" class="btn-primary" type="button">播本句</button>
+        <button id="shadPauseBtn" class="btn-amber" type="button">暂停</button>
+        <button id="shadNextBtn" type="button">下一句</button>
+      </div>
+      <div class="btn-row" style="margin-top: 8px;">
+        <button id="shadLoopBtn" type="button">单句循环: OFF</button>
+        <button id="shadGapBtn" type="button">循环留白: 1.2s</button>
+        <button id="shadFullBtn" class="btn-green" type="button">从头通读</button>
+      </div>
+      <!-- Voice Self-Check Recorder (breaks bone-conduction illusion!) -->
+      <div style="margin-top: 12px; padding: 10px 12px; background: #0e1526; border: 1px solid var(--border); border-radius: 12px;">
+        <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;margin-bottom:8px;">
+          <strong style="font-size:13px;color:#e2e8f0;">发音录音自查（破除骨传导滤镜 / 可导出给 AI 听诊）</strong>
+          <span id="recStateBadge" class="badge badge-offline">未录音</span>
+        </div>
+        <div class="btn-row">
+          <button id="recToggleBtn" class="btn-danger" type="button">开始录音</button>
+          <button id="recPlayMineBtn" type="button" disabled>回放我的发音</button>
+          <button id="recCompareBtn" class="btn-purple" type="button" disabled>原声 -> 我 对比</button>
+          <button id="recExportBtn" class="btn-sm" type="button" disabled>导出音频</button>
+        </div>
+      </div>
+      <div class="speed-row" id="speedRow4" style="margin-top: 10px;"></div>
+      <div class="muted" style="margin-top: 12px;">点击句号直接跳转：</div>
+      <div id="shadChipGrid" class="chip-grid"></div>
+    </div>
+
+    <!-- Step 5: Key Sentences, AI Prompt & Continuous GitHub Recording -->
+    <div id="stepPanel4" class="card hidden">
+      <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 8px; margin-bottom: 10px;">
+        <strong>本课卡壳句 + 重点句 + 自选收藏（已自动入 1-3-7 复习队）</strong>
+        <span id="keyCountBadge" class="badge badge-core">0 句</span>
+      </div>
+
+      <!-- Optional Scenario Selector (populated dynamically from user's profile/player-profile.json!) -->
+      <div id="scenarioPresetWrap" class="hidden" style="margin-bottom:10px;">
+        <label class="field-label" for="scenarioPresetSelect">选择你的 AI 语音实战场景（来自个人配置）</label>
+        <select id="scenarioPresetSelect"></select>
+      </div>
+
+      <div class="btn-row" style="margin-bottom: 12px;">
+        <button id="copyAiBtn" class="btn-purple" type="button">一键复制给 AI 语音教练</button>
+        <button id="saveGhReportBtn" class="btn-green hidden" type="button">提交报告到 GitHub</button>
+        <button id="saveServerReportBtn" class="btn-green hidden" type="button">保存到本地书库</button>
+        <button id="downloadMdBtn" class="btn-primary" type="button">导出 Markdown 报告</button>
+        <button id="copyMdBtn" type="button">复制完整报告</button>
+      </div>
+
+      <div id="keyList" class="review-list"></div>
+
+      <!-- Quick Continuous Personal Note / Unknown & Fuzzy Vocab Logger -->
+      <hr class="divider" />
+      <div style="display:flex;justify-content:space-between;align-items:center;gap:8px;flex-wrap:wrap;margin-bottom:8px;">
+        <p class="sec-title" style="margin:0;">随手记录生词 / 模糊词 / 新句子（自动入 1-3-7 复习 + 同步到 GitHub）</p>
+        <div style="display:flex;gap:6px;">
+          <button id="noteModeSentBtn" class="btn-sm btn-primary" type="button">记录句子</button>
+          <button id="noteModeVocabBtn" class="btn-sm" type="button">记录生词 / 模糊词</button>
+        </div>
+      </div>
+      <div class="form-grid" style="margin-bottom:8px;">
+        <input id="quickNoteEn" type="text" placeholder="英文原句（如：Could you check if you have half a size up?）" autocomplete="off" />
+        <input id="quickNoteZh" type="text" placeholder="中文意思 / 场景提示（选填，供 1-3-7 闪卡抽查）" />
+      </div>
+      <div class="btn-row">
+        <button id="quickNoteSaveBtn" class="btn-purple" type="button">记录并加入 1-3-7 复习队列</button>
+      </div>
+
+      <div style="margin-top: 16px; padding-top: 12px; border-top: 1px solid var(--border); display: flex; justify-content: flex-end;">
+        <button id="clearLessonBtn" class="btn-sm btn-danger" type="button">清空本课听写缓存</button>
+      </div>
+    </div>
+
+    <!-- Status Bar -->
+    <div id="statusBar" class="status-bar">请选择本地/iCloud 的音频与 .lrc 字幕开始练习，或点击右上角「1-3-7 复习」抽查旧课。</div>
+  </div>
+
+  <audio id="audioEl" preload="auto" playsinline></audio>
+  <audio id="recAudioEl" preload="auto" playsinline></audio>
+  <script src="nce1-data.js"></script>
+  <script>
+    (() => {
+      'use strict';
+
+      const SPEEDS = [0.75, 0.85, 0.9, 1.0, 1.1, 1.25];
+      const LOOP_GAPS = [0.8, 1.2, 1.8, 2.5];
+      const STEP_MINUTES = [2, 8, 5, 10, 5];
+      const REVIEW_INTERVALS = { 1: 1, 2: 3, 3: 7, 4: 14, 5: 30 };
+
+      const LS_REVIEW = 'english_lab_review_state_v1';
+      const LS_GH = 'english_lab_gh_config_v1';
+      const LS_PROFILE = 'english_lab_profile_v1';
+      const LS_CUSTOM_CURATED = 'english_lab_custom_curated_v1';
+
+      const DEFAULT_PROFILE = {
+        version: 1,
+        display_name: '',
+        focus_title: '',
+        curated_path: 'guides/nce1-key-sentences.json',
+        dictation_dir: 'logs/dictations',
+        sentence_bank_path: 'logs/sentence-bank.md',
+        vocab_notes_path: 'logs/vocab-notes.md',
+        review_state_path: 'logs/review-state.json',
+        ai_context: '请用 5 分钟和我做盲听口语情景抽查，把下面这些我听写卡壳或收藏的句子自然融入日常情景对话里考我（不要显示文字，只用语音互动）。',
+        scenario_presets: [],
+      };
+
+      const SPELLING_EQUIV = {
+        color: 'colour', colors: 'colours', favorite: 'favourite',
+        neighbor: 'neighbour', neighbors: 'neighbours', center: 'centre',
+        meter: 'metre', meters: 'metres', theater: 'theatre',
+        traveling: 'travelling', traveled: 'travelled', gray: 'grey',
+        tire: 'tyre', check: 'cheque', usa: 'u.s.a', us: 'u.s',
+        uk: 'u.k', ok: 'okay',
+      };
+
+      const NUM_EQUIV = {
+        '0': 'zero', '1': 'one', '2': 'two', '3': 'three', '4': 'four',
+        '5': 'five', '6': 'six', '7': 'seven', '8': 'eight', '9': 'nine',
+        '10': 'ten', '11': 'eleven', '12': 'twelve', '13': 'thirteen',
+        '14': 'fourteen', '15': 'fifteen', '16': 'sixteen', '17': 'seventeen',
+        '18': 'eighteen', '19': 'nineteen', '20': 'twenty', '30': 'thirty',
+        '40': 'forty', '50': 'fifty', '60': 'sixty', '70': 'seventy',
+        '80': 'eighty', '90': 'ninety',
+      };
+
+      const TITLE_RE = /^lesson\s+(?:\d+|one|two|three|four|five|six|seven|eight|nine|ten)[.!?:]*$/i;
+      const AUDIO_EXT_RE = /\.(mp3|m4a|wav|ogg|flac|opus|aac|webm|mp4)$/i;
+      const SUB_EXT_RE = /\.(lrc|srt)$/i;
+
+      const state = {
+        serverAvailable: false,
+        libraries: [],
+        localPairs: [],
+        sourceMode: 'local',
+        loaded: false,
+        audioName: '',
+        lessonNum: null,
+        sourceLabel: '',
+        duration: 0,
+        segments: [],
+        curated: {},
+        lessonMeta: {},
+        stepIdx: 0,
+        idx: 0,
+        speed: 1.0,
+        loopEnabled: false,
+        loopGapIdx: 1,
+        showSpotText: true,
+        reviewErrorsOnly: true,
+        dictationLines: [],
+        playCounts: [],
+        bookmarks: new Set(),
+        // Playback engine
+        playMode: 'idle',
+        playStopAt: null,
+        fullPausedAt: null,
+        loopTimerId: null,
+        // Stage countdown timer
+        timerSecLeft: STEP_MINUTES[0] * 60,
+        timerRunning: false,
+        timerHasStarted: false,
+        timerIntervalId: null,
+        // Personal profile, custom curated notes, GitHub sync & 1-3-7 Review
+        gh: { repo: '', branch: 'main', token: '' },
+        profile: { ...DEFAULT_PROFILE },
+        customCuratedDb: null, // overrides window.NCE1_KEY_SENTENCES when pulled from user's GitHub
+        reviewState: { version: 1, cards: {} },
+        reviewQueue: [],
+        reviewMode: 'due', // 'due' | 'today' | 'now'
+        reviewPos: 0,
+        reviewRevealed: false,
+        reviewSessionStats: { passed: 0, failed: 0 },
+        // Voice self-check recorder & quick note mode
+        noteMode: 'sentence', // 'sentence' | 'vocab'
+        recActive: false,
+        recRecorder: null,
+        recStream: null,
+        recChunks: [],
+        recBlob: null,
+        recUrl: null,
+        recMime: '',
+        recSec: 0,
+        recTimerId: null,
+        recCompareTimerId: null,
+      };
+
+      const $ = (id) => document.getElementById(id);
+      const audioEl = $('audioEl');
+      const recAudioEl = $('recAudioEl');
+
+      // --- Utilities ---
+      function escHtml(s) {
+        return String(s || '')
+          .replace(/&/g, '&amp;')
+          .replace(/</g, '&lt;')
+          .replace(/>/g, '&gt;')
+          .replace(/"/g, '&quot;');
+      }
+
+      function todayIso() {
+        const d = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        return `${d.getFullYear()}-${pad(d.getMonth() + 1)}-${pad(d.getDate())}`;
+      }
+
+      function addDaysIso(isoDate, days) {
+        const [y, m, d] = isoDate.split('-').map(Number);
+        const dt = new Date(Date.UTC(y, m - 1, d + days));
+        return dt.toISOString().slice(0, 10);
+      }
+
+      function normSentenceKey(s) {
+        return String(s || '').toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
+      }
+
+      function extractLessonNum(filename) {
+        const m = String(filename || '').match(/(?:nce[1-4]).*?(\d+)\.[^.]+$/i)
+          || String(filename || '').match(/(?:^|[^0-9])(\d{1,3})\.[^.]+$/);
+        return m ? parseInt(m[1], 10) : null;
+      }
+
+      function fmtTime(sec) {
+        const s = Math.max(0, Number(sec) || 0);
+        const m = Math.floor(s / 60);
+        const r = (s - m * 60).toFixed(1).padStart(4, '0');
+        return `${String(m).padStart(2, '0')}:${r}`;
+      }
+
+      function fmtMMSS(sec) {
+        const s = Math.max(0, Math.round(Number(sec) || 0));
+        return `${String(Math.floor(s / 60)).padStart(2, '0')}:${String(s % 60).padStart(2, '0')}`;
+      }
+
+      let toastTimerId = null;
+      function showToast(msg, tone = 'info', durationMs = 2800) {
+        const el = $('toastBanner');
+        if (!el) return;
+        el.textContent = msg;
+        el.className = `toast-banner ${tone === 'info' ? '' : tone}`;
+        void el.offsetWidth; // trigger reflow for smooth animation replay
+        el.classList.add('show');
+        if (toastTimerId) clearTimeout(toastTimerId);
+        toastTimerId = setTimeout(() => {
+          el.classList.remove('show');
+          toastTimerId = null;
+        }, durationMs);
+      }
+
+      async function runWithBtnBusy(btnEl, busyText, fn) {
+        if (!btnEl) return await fn();
+        const origText = btnEl.textContent;
+        btnEl.disabled = true;
+        btnEl.classList.add('btn-busy');
+        btnEl.textContent = busyText;
+        try {
+          return await fn();
+        } finally {
+          btnEl.disabled = false;
+          btnEl.classList.remove('btn-busy');
+          btnEl.textContent = origText;
+        }
+      }
+
+      function setStatus(msg, toastTone = null) {
+        $('statusBar').textContent = msg;
+        if (toastTone) showToast(msg, toastTone);
+      }
+
+      function utf8ToBase64(str) {
+        const bytes = new TextEncoder().encode(str);
+        let bin = '';
+        for (let i = 0; i < bytes.length; i++) bin += String.fromCharCode(bytes[i]);
+        return btoa(bin);
+      }
+
+      function base64ToUtf8(b64) {
+        const bin = atob(String(b64 || '').replace(/\s+/g, ''));
+        const bytes = new Uint8Array(bin.length);
+        for (let i = 0; i < bin.length; i++) bytes[i] = bin.charCodeAt(i);
+        return new TextDecoder('utf-8').decode(bytes);
+      }
+
+      function activeCuratedDb() {
+        return state.customCuratedDb || window.NCE1_KEY_SENTENCES || {};
+      }
+
+      function isGhConfigured() {
+        return Boolean(state.gh.repo && state.gh.repo.includes('/') && state.gh.token);
+      }
+
+      function playBeep() {
+        try {
+          const AC = window.AudioContext || window.webkitAudioContext;
+          if (!AC) return;
+          const ctx = new AC();
+          const now = ctx.currentTime;
+          [880, 1174.66].forEach((freq, i) => {
+            const osc = ctx.createOscillator();
+            const gain = ctx.createGain();
+            osc.type = 'sine';
+            osc.frequency.value = freq;
+            gain.gain.setValueAtTime(0.001, now + i * 0.22);
+            gain.gain.exponentialRampToValueAtTime(0.18, now + i * 0.22 + 0.03);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + i * 0.22 + 0.2);
+            osc.connect(gain);
+            gain.connect(ctx.destination);
+            osc.start(now + i * 0.22);
+            osc.stop(now + i * 0.22 + 0.22);
+          });
+        } catch (_) {}
+      }
+
+      async function copyText(text) {
+        if (navigator.clipboard && window.isSecureContext) {
+          try {
+            await navigator.clipboard.writeText(text);
+            return true;
+          } catch (_) {}
+        }
+        const ta = document.createElement('textarea');
+        ta.value = text;
+        ta.setAttribute('readonly', '');
+        ta.style.position = 'fixed';
+        ta.style.top = '-9999px';
+        ta.style.left = '-9999px';
+        document.body.appendChild(ta);
+        ta.focus();
+        ta.select();
+        ta.setSelectionRange(0, text.length);
+        let ok = false;
+        try { ok = document.execCommand('copy'); } catch (_) {}
+        document.body.removeChild(ta);
+        return ok;
+      }
+
+      // --- Local Storage for Profile, GitHub Config, Custom Curated & 1-3-7 Review ---
+      function loadStoredMeta() {
+        try {
+          const gh = JSON.parse(localStorage.getItem(LS_GH) || 'null');
+          if (gh && typeof gh === 'object') {
+            state.gh = { repo: gh.repo || '', branch: gh.branch || 'main', token: gh.token || '' };
+          }
+        } catch (_) {}
+        try {
+          const prof = JSON.parse(localStorage.getItem(LS_PROFILE) || 'null');
+          if (prof && typeof prof === 'object') {
+            state.profile = { ...DEFAULT_PROFILE, ...prof };
+          }
+        } catch (_) {}
+        try {
+          const cur = JSON.parse(localStorage.getItem(LS_CUSTOM_CURATED) || 'null');
+          if (cur && typeof cur === 'object') state.customCuratedDb = cur;
+        } catch (_) {}
+        try {
+          const rv = JSON.parse(localStorage.getItem(LS_REVIEW) || 'null');
+          if (rv && typeof rv === 'object' && rv.cards && typeof rv.cards === 'object') {
+            state.reviewState = rv;
+          }
+        } catch (_) {}
+      }
+
+      function saveGhConfig() {
+        try { localStorage.setItem(LS_GH, JSON.stringify(state.gh)); } catch (_) {}
+      }
+
+      function saveProfileLocal() {
+        try { localStorage.setItem(LS_PROFILE, JSON.stringify(state.profile)); } catch (_) {}
+      }
+
+      function saveCustomCuratedLocal() {
+        try {
+          if (state.customCuratedDb) localStorage.setItem(LS_CUSTOM_CURATED, JSON.stringify(state.customCuratedDb));
+          else localStorage.removeItem(LS_CUSTOM_CURATED);
+        } catch (_) {}
+      }
+
+      function saveReviewStateLocal() {
+        try { localStorage.setItem(LS_REVIEW, JSON.stringify(state.reviewState)); } catch (_) {}
+        updateReviewBadge();
+      }
+
+      // --- GitHub REST API Client (Direct CORS, Private/Public Repo Support) ---
+      async function ghGetFile(path) {
+        const cleanPath = String(path || '').replace(/^\/+/, '');
+        const url = `https://api.github.com/repos/${state.gh.repo}/contents/${cleanPath}?ref=${encodeURIComponent(state.gh.branch || 'main')}`;
+        const res = await fetch(url, {
+          cache: 'no-store',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${state.gh.token}`,
+          },
+        });
+        if (res.status === 404) return null;
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `GitHub HTTP ${res.status}`);
+        }
+        const data = await res.json();
+        return { sha: data.sha, text: base64ToUtf8(data.content || '') };
+      }
+
+      async function ghPutFile(path, contentText, commitMsg, knownSha = null) {
+        const cleanPath = String(path || '').replace(/^\/+/, '');
+        let sha = knownSha;
+        if (sha === null) {
+          const existing = await ghGetFile(cleanPath);
+          if (existing) sha = existing.sha;
+        }
+        const url = `https://api.github.com/repos/${state.gh.repo}/contents/${cleanPath}`;
+        const body = {
+          message: commitMsg,
+          content: utf8ToBase64(contentText),
+          branch: state.gh.branch || 'main',
+        };
+        if (sha) body.sha = sha;
+        const res = await fetch(url, {
+          method: 'PUT',
+          headers: {
+            Accept: 'application/vnd.github+json',
+            Authorization: `Bearer ${state.gh.token}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify(body),
+        });
+        if (!res.ok) {
+          const err = await res.json().catch(() => ({}));
+          throw new Error(err.message || `GitHub PUT HTTP ${res.status}`);
+        }
+        return await res.json();
+      }
+
+      function mergeReviewStates(localSt, remoteSt) {
+        const merged = { version: 1, cards: {} };
+        const lCards = (localSt && localSt.cards) || {};
+        const rCards = (remoteSt && remoteSt.cards) || {};
+        const keys = new Set([...Object.keys(lCards), ...Object.keys(rCards)]);
+        for (const k of keys) {
+          const a = lCards[k];
+          const b = rCards[k];
+          if (a && !b) { merged.cards[k] = { ...a }; continue; }
+          if (!a && b) { merged.cards[k] = { ...b }; continue; }
+          const aDate = a.last_reviewed || '';
+          const bDate = b.last_reviewed || '';
+          const primary = (aDate > bDate || (aDate === bDate && (a.reviews || 0) >= (b.reviews || 0))) ? a : b;
+          const secondary = primary === a ? b : a;
+          merged.cards[k] = {
+            ...secondary,
+            ...primary,
+            zh: primary.zh || secondary.zh || '',
+            note: primary.note || secondary.note || '',
+            grammar: primary.grammar || secondary.grammar || '',
+            lesson: primary.lesson ?? secondary.lesson ?? null,
+            tags: [...new Set([...(secondary.tags || []), ...(primary.tags || [])])],
+          };
+        }
+        return merged;
+      }
+
+      async function pullAllFromGitHub() {
+        if (!isGhConfigured()) {
+          setStatus('请先填写 GitHub 仓库（owner/repo）和 Token。');
+          return;
+        }
+        $('ghSyncStatus').textContent = '正在连接 GitHub 拉取个人定制数据...';
+        try {
+          // 1. Pull profile/player-profile.json
+          let loadedParts = [];
+          const profRes = await ghGetFile('profile/player-profile.json');
+          if (profRes) {
+            const parsed = JSON.parse(profRes.text);
+            state.profile = { ...DEFAULT_PROFILE, ...parsed };
+            saveProfileLocal();
+            loadedParts.push('个人配置');
+          }
+
+          // 2. Pull customized curated notes (e.g. guides/nce1-key-sentences.json)
+          const curatedPath = state.profile.curated_path || 'guides/nce1-key-sentences.json';
+          const curRes = await ghGetFile(curatedPath);
+          if (curRes) {
+            state.customCuratedDb = JSON.parse(curRes.text);
+            saveCustomCuratedLocal();
+            loadedParts.push(`专属词句库(${Object.keys(state.customCuratedDb).length}课)`);
+          }
+
+          // 3. Pull & merge logs/review-state.json
+          const rvPath = state.profile.review_state_path || 'logs/review-state.json';
+          const rvRes = await ghGetFile(rvPath);
+          if (rvRes) {
+            const remoteRv = JSON.parse(rvRes.text);
+            state.reviewState = mergeReviewStates(state.reviewState, remoteRv);
+            saveReviewStateLocal();
+            loadedParts.push(`1-3-7复习(${Object.keys(state.reviewState.cards).length}句)`);
+          }
+
+          // Re-match curated notes for currently loaded lesson if any
+          if (state.loaded) {
+            const { matched, meta } = matchCuratedSentences(state.audioName, state.segments, null);
+            state.curated = matched;
+            state.lessonMeta = meta;
+            renderCurrentStep();
+          }
+
+          renderPersonalizationUi();
+          if (!state.reviewQueue.length || state.reviewPos >= state.reviewQueue.length || (state.reviewPos === 0 && !state.reviewRevealed)) {
+            startReviewSession(state.reviewMode || 'due', false);
+          } else {
+            renderReviewDashboard();
+          }
+          const summary = loadedParts.length ? loadedParts.join(' + ') : '连接成功（仓库暂无初始配置文件，可直接开始记录）';
+          $('ghSyncStatus').textContent = `已连接 ${state.gh.repo}：${summary}`;
+          setStatus(`GitHub 同步成功：${summary}`, 'ok');
+        } catch (err) {
+          $('ghSyncStatus').textContent = `同步失败：${err.message || err}`;
+          setStatus(`GitHub 同步失败：${err.message || err}`, 'err');
+        }
+      }
+
+      async function pushReviewStateToGitHub() {
+        if (!isGhConfigured()) return false;
+        const rvPath = state.profile.review_state_path || 'logs/review-state.json';
+        try {
+          const existing = await ghGetFile(rvPath);
+          if (existing) {
+            try {
+              const remoteRv = JSON.parse(existing.text);
+              state.reviewState = mergeReviewStates(state.reviewState, remoteRv);
+              saveReviewStateLocal();
+            } catch (_) {}
+          }
+          const payload = JSON.stringify(state.reviewState, null, 2) + '\n';
+          await ghPutFile(rvPath, payload, `sync: update 1-3-7 review state (${todayIso()})`, existing ? existing.sha : null);
+          renderReviewDashboard();
+          setStatus(`已双向同步 ${Object.keys(state.reviewState.cards).length} 条复习记录到 GitHub！`, 'ok');
+          return true;
+        } catch (err) {
+          setStatus(`同步复习进度到 GitHub 失败：${err.message || err}`, 'err');
+          return false;
+        }
+      }
+
+      async function appendSentenceToGitHubBank(sentence, sourceLabel) {
+        if (!isGhConfigured()) return false;
+        const bankPath = state.profile.sentence_bank_path || 'logs/sentence-bank.md';
+        try {
+          const existing = await ghGetFile(bankPath);
+          const curText = existing
+            ? existing.text
+            : '# 个人黄金句 & 卡壳句词库（自动沉淀）\n\n';
+          if (curText.includes(sentence)) return true;
+          const entry = `- [${todayIso()}] \`${sentence}\`  *(来源: ${sourceLabel})*\n`;
+          const nextText = curText.endsWith('\n') ? (curText + entry) : (curText + '\n' + entry);
+          await ghPutFile(bankPath, nextText, `log: bookmark sentence (${todayIso()})`, existing ? existing.sha : null);
+          return true;
+        } catch (err) {
+          setStatus(`写入 GitHub 词库失败：${err.message || err}`);
+          return false;
+        }
+      }
+
+      async function appendVocabToGitHub(word, meaning, sourceLabel) {
+        if (!isGhConfigured()) return false;
+        const vocabPath = state.profile.vocab_notes_path || 'logs/vocab-notes.md';
+        try {
+          const existing = await ghGetFile(vocabPath);
+          const curText = existing
+            ? existing.text
+            : '# 模糊词精准对照本（Fuzzy-Word Precision Vault）\n\n';
+          const entry = `- [${todayIso()}] \`${word}\` = ${meaning || '(待补充对比词)'}  *(来源: ${sourceLabel})*\n`;
+          const nextText = curText.endsWith('\n') ? (curText + entry) : (curText + '\n' + entry);
+          await ghPutFile(vocabPath, nextText, `log: vocab note ${word} (${todayIso()})`, existing ? existing.sha : null);
+          return true;
+        } catch (err) {
+          setStatus(`写入 GitHub 模糊词本失败：${err.message || err}`);
+          return false;
+        }
+      }
+
+      // --- Voice Self-Check Recorder (MediaRecorder, iOS Safari + Desktop) ---
+      function pickRecMime() {
+        if (typeof MediaRecorder === 'undefined') return '';
+        const candidates = ['audio/mp4', 'audio/webm;codecs=opus', 'audio/webm', 'audio/ogg;codecs=opus'];
+        for (const c of candidates) {
+          try { if (MediaRecorder.isTypeSupported(c)) return c; } catch (_) {}
+        }
+        return '';
+      }
+
+      function renderRecUi() {
+        const badge = $('recStateBadge');
+        const toggleBtn = $('recToggleBtn');
+        const hasBlob = Boolean(state.recBlob && state.recUrl);
+        if (state.recActive) {
+          badge.textContent = `REC ${fmtMMSS(state.recSec)}`;
+          badge.className = 'badge badge-miss';
+          toggleBtn.textContent = `停止录音 (${fmtMMSS(state.recSec)})`;
+          toggleBtn.className = 'btn-amber';
+        } else if (hasBlob) {
+          badge.textContent = `已录 ${fmtMMSS(state.recSec)}`;
+          badge.className = 'badge badge-ok';
+          toggleBtn.textContent = '重新录音';
+          toggleBtn.className = 'btn-danger';
+        } else {
+          badge.textContent = '未录音';
+          badge.className = 'badge badge-offline';
+          toggleBtn.textContent = '开始录音';
+          toggleBtn.className = 'btn-danger';
+        }
+        $('recPlayMineBtn').disabled = state.recActive || !hasBlob;
+        $('recCompareBtn').disabled = state.recActive || !hasBlob || !state.loaded;
+        $('recExportBtn').disabled = state.recActive || !hasBlob;
+      }
+
+      function cleanupRecStream() {
+        if (state.recTimerId) { clearInterval(state.recTimerId); state.recTimerId = null; }
+        if (state.recStream) {
+          try { state.recStream.getTracks().forEach((t) => t.stop()); } catch (_) {}
+          state.recStream = null;
+        }
+      }
+
+      async function toggleVoiceRecording() {
+        if (state.recActive) {
+          if (state.recRecorder && state.recRecorder.state !== 'inactive') {
+            state.recRecorder.stop();
+          }
+          state.recActive = false;
+          cleanupRecStream();
+          renderRecUi();
+          return;
+        }
+        if (!navigator.mediaDevices || !navigator.mediaDevices.getUserMedia || typeof MediaRecorder === 'undefined') {
+          setStatus('当前浏览器不支持网页录音（请确保通过 HTTPS 打开，或使用手机自带语音备忘录）。');
+          return;
+        }
+        if (state.recCompareTimerId) { clearTimeout(state.recCompareTimerId); state.recCompareTimerId = null; }
+        state.loopEnabled = false;
+        stopAudio();
+        recAudioEl.pause();
+        try {
+          const stream = await navigator.mediaDevices.getUserMedia({ audio: true });
+          state.recStream = stream;
+          const mime = pickRecMime();
+          state.recMime = mime;
+          state.recChunks = [];
+          const recorder = mime ? new MediaRecorder(stream, { mimeType: mime }) : new MediaRecorder(stream);
+          state.recRecorder = recorder;
+          recorder.ondataavailable = (e) => { if (e.data && e.data.size > 0) state.recChunks.push(e.data); };
+          recorder.onstop = () => {
+            const finalMime = recorder.mimeType || state.recMime || 'audio/mp4';
+            state.recMime = finalMime;
+            if (state.recUrl) URL.revokeObjectURL(state.recUrl);
+            state.recBlob = new Blob(state.recChunks, { type: finalMime });
+            state.recUrl = URL.createObjectURL(state.recBlob);
+            recAudioEl.src = state.recUrl;
+            recAudioEl.load();
+            cleanupRecStream();
+            state.recActive = false;
+            renderRecUi();
+            setStatus(`录音完成（${fmtMMSS(state.recSec)}）！点「回放我的发音」或「原声 -> 我 对比」听真实差距。`);
+          };
+          state.recSec = 0;
+          state.recActive = true;
+          recorder.start();
+          state.recTimerId = setInterval(() => { state.recSec++; renderRecUi(); }, 1000);
+          renderRecUi();
+          setStatus('正在录音... 请大声朗读本句（或连续通读整篇作为基线录音），读完点「停止录音」。');
+        } catch (err) {
+          cleanupRecStream();
+          state.recActive = false;
+          renderRecUi();
+          setStatus(`无法开启麦克风：${err.message || err}`);
+        }
+      }
+
+      function playMyRecording() {
+        if (!state.recUrl) return;
+        if (state.recCompareTimerId) { clearTimeout(state.recCompareTimerId); state.recCompareTimerId = null; }
+        state.loopEnabled = false;
+        stopAudio();
+        recAudioEl.currentTime = 0;
+        const p = recAudioEl.play();
+        if (p && typeof p.catch === 'function') p.catch((e) => setStatus(`回放失败：${e.message || e}`));
+        setStatus('正在回放你的录音（注意听重音、语调和尾音）...');
+      }
+
+      function compareOrigAndMine() {
+        if (!state.loaded || !state.recUrl) return;
+        if (state.recCompareTimerId) { clearTimeout(state.recCompareTimerId); state.recCompareTimerId = null; }
+        state.loopEnabled = false;
+        recAudioEl.pause();
+        const seg = state.segments[state.idx];
+        const segDurMs = Math.round(((seg.end - seg.start) / (state.speed || 1.0)) * 1000);
+        playSegment(state.idx, { countPlay: false, isLoop: false });
+        setStatus('A/B 对比播放：先听原声 -> 随后自动接播你的录音...');
+        state.recCompareTimerId = setTimeout(() => {
+          state.recCompareTimerId = null;
+          if (!state.recActive && state.recUrl) playMyRecording();
+        }, Math.max(400, segDurMs + 420));
+      }
+
+      async function exportMyRecording() {
+        if (!state.recBlob) return;
+        const ext = (state.recMime || '').includes('mp4') ? 'm4a' : ((state.recMime || '').includes('ogg') ? 'ogg' : 'webm');
+        const safe = (state.audioName || 'recording').replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_-]+/g, '_');
+        const filename = `${todayIso()}_${safe}_S${String(state.idx + 1).padStart(2, '0')}.${ext}`;
+        if (typeof File === 'function' && navigator.canShare) {
+          try {
+            const file = new File([state.recBlob], filename, { type: state.recMime || 'audio/mp4' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({ title: filename, files: [file] });
+              setStatus(`已导出录音 ${filename}（可直接发送给多模态 AI 听诊发音或存入文件）。`);
+              return;
+            }
+          } catch (err) {
+            if (err && err.name === 'AbortError') { setStatus('已取消导出录音。'); return; }
+          }
+        }
+        const a = document.createElement('a');
+        a.href = state.recUrl;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setStatus(`已下载录音 ${filename}。`);
+      }
+
+      async function pushDictationReportToGitHub() {
+        if (!isGhConfigured()) return;
+        const dir = (state.profile.dictation_dir || 'logs/dictations').replace(/\/+$/, '');
+        const safe = state.audioName.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_-]+/g, '_');
+        const path = `${dir}/${todayIso()}_${safe}.md`;
+        setStatus(`正在提交听写报告到 GitHub (${path})...`, 'info');
+        try {
+          await ghPutFile(path, buildMarkdownReport(), `log: dictation report ${safe} (${todayIso()})`);
+          await pushReviewStateToGitHub();
+          setStatus(`已提交听写报告与复习进度到 GitHub：${path}`, 'ok');
+        } catch (err) {
+          setStatus(`提交报告到 GitHub 失败：${err.message || err}`, 'err');
+        }
+      }
+
+      // --- 1-3-7-14 Spaced Active-Recall Engine ---
+      function upsertReviewCard(sentence, { lesson = null, source = 'web', tag = 'KEY', zh = '', note = '', grammar = '', missedWords = [], dueOffsetDays = 1 } = {}) {
+        const clean = String(sentence || '').trim();
+        if (!clean || clean === '(无文本)') return false;
+        const key = normSentenceKey(clean);
+        if (!key) return false;
+        const mwClean = [...new Set((missedWords || []).map((w) => String(w || '').toLowerCase().replace(/^[^a-z0-9]+|[^a-z0-9]+$/g, '')).filter(Boolean))];
+        const cards = state.reviewState.cards;
+        const today = todayIso();
+        if (cards[key]) {
+          const c = cards[key];
+          if (zh && !c.zh) c.zh = zh;
+          if (note && !c.note) c.note = note;
+          if (grammar && !c.grammar) c.grammar = grammar;
+          if (lesson !== null && c.lesson === null) c.lesson = lesson;
+          if (mwClean.length) c.missed_words = [...new Set([...(c.missed_words || []), ...mwClean])];
+          if (tag && !(c.tags || []).includes(tag)) c.tags = [...(c.tags || []), tag];
+          if (dueOffsetDays === 0 && c.next_due > today) c.next_due = today;
+          return false;
+        }
+        cards[key] = {
+          sentence: clean,
+          lesson,
+          source,
+          tags: tag ? [tag] : [],
+          zh,
+          note,
+          grammar,
+          missed_words: mwClean,
+          box: 1,
+          studied_date: today,
+          next_due: addDaysIso(today, dueOffsetDays),
+          reviews: 0,
+          lapses: 0,
+          last_reviewed: null,
+        };
+        return true;
+      }
+
+      function harvestLessonToReview() {
+        if (!state.loaded) return 0;
+        const { diffs } = computeAllDiffs();
+        let added = 0;
+        for (let i = 0; i < state.segments.length; i++) {
+          const seg = state.segments[i];
+          const txt = (seg.text || state.dictationLines[i] || '').trim();
+          if (!txt) continue;
+          const d = diffs[i];
+          const meta = state.curated[i];
+          const isStar = state.bookmarks.has(i);
+          const isMiss = d && !d.isPerfect;
+          const isStuck = (state.playCounts[i] || 0) >= 3;
+          if (isMiss || isStuck || isStar) {
+            const tag = isMiss ? 'MISS' : (isStuck ? 'STUCK' : 'STAR');
+            if (upsertReviewCard(txt, {
+              lesson: state.lessonNum,
+              source: state.audioName,
+              tag,
+              zh: meta ? (meta.zh || '') : '',
+              note: meta ? (meta.note || '') : '',
+              grammar: state.lessonMeta.grammar || '',
+              missedWords: (d && d.missedNorms) ? [...d.missedNorms] : [],
+              dueOffsetDays: 1,
+            })) added++;
+          }
+        }
+        if (added > 0) saveReviewStateLocal();
+        return added;
+      }
+
+      function parseLessonSpecStr(spec) {
+        const nums = new Set();
+        for (const raw of String(spec || '').split(/[,\s]+/)) {
+          const part = raw.trim();
+          if (!part) continue;
+          const rng = part.match(/^(\d+)-(\d+)$/);
+          if (rng) {
+            const a = parseInt(rng[1], 10);
+            const b = parseInt(rng[2], 10);
+            for (let k = Math.min(a, b); k <= Math.max(a, b); k++) nums.add(k);
+          } else if (/^\d+$/.test(part)) {
+            nums.add(parseInt(part, 10));
+          }
+        }
+        return [...nums].sort((a, b) => a - b);
+      }
+
+      function seedReviewLessons(specStr, dueToday = false) {
+        const nums = parseLessonSpecStr(specStr);
+        const db = activeCuratedDb();
+        let added = 0;
+        for (const n of nums) {
+          const entry = db[`nce1:${n}`];
+          if (!entry) continue;
+          for (const item of (entry.sentences || [])) {
+            const tag = item.type === 'golden' ? 'GOLD' : 'TRAP';
+            if (upsertReviewCard(item.match, {
+              lesson: n,
+              source: `nce1:L${n}`,
+              tag,
+              zh: item.zh || '',
+              note: item.note || '',
+              grammar: entry.grammar || '',
+              dueOffsetDays: dueToday ? 0 : 1,
+            })) added++;
+          }
+        }
+        saveReviewStateLocal();
+        return added;
+      }
+
+      function getDueCards(includeNotDue = false, limit = 8) {
+        const today = todayIso();
+        const entries = Object.entries(state.reviewState.cards || {});
+        const due = entries.filter(([, c]) => (c.next_due || today) <= today);
+        const pool = (due.length || !includeNotDue) ? due : entries;
+        pool.sort(([, a], [, b]) => {
+          const aDue = (a.next_due || today) <= today ? 0 : 1;
+          const bDue = (b.next_due || today) <= today ? 0 : 1;
+          if (aDue !== bDue) return aDue - bDue;
+          if ((b.lapses || 0) !== (a.lapses || 0)) return (b.lapses || 0) - (a.lapses || 0);
+          const aMiss = (a.tags || []).includes('MISS') ? 0 : 1;
+          const bMiss = (b.tags || []).includes('MISS') ? 0 : 1;
+          if (aMiss !== bMiss) return aMiss - bMiss;
+          if ((a.box || 1) !== (b.box || 1)) return (a.box || 1) - (b.box || 1);
+          return String(a.next_due || '').localeCompare(String(b.next_due || ''));
+        });
+        return pool.slice(0, limit);
+      }
+
+      function makeClozeHint(sentence, missedWords = []) {
+        const mwSet = new Set((missedWords || []).map((w) => String(w || '').toLowerCase().replace(/^'+|'+$/g, '')).filter(Boolean));
+        if (mwSet.size > 0) {
+          let matchedAny = false;
+          const out = String(sentence || '').replace(/[A-Za-z']+/g, (w) => {
+            if (mwSet.has(w.toLowerCase().replace(/^'+|'+$/g, ''))) {
+              matchedAny = true;
+              return w.length > 1 ? (w[0] + '_'.repeat(w.length - 1)) : '_';
+            }
+            return w;
+          });
+          if (matchedAny) return out;
+        }
+        const stop = new Set(['i', 'a', 'an', 'the', 'is', 'are', 'was', 'were', 'to', 'of', 'in', 'on', 'at', 'for', 'and', 'or', 'it', 'my', 'you', 'we', 'he', 'she', 'this', 'that', 'they', 'do', 'does', 'did', 'have', 'has', 'not', 'no', 'yes', 'very', 'too', 'so', 'be']);
+        const words = String(sentence || '').match(/[A-Za-z]+/g) || [];
+        const cands = [...new Set(words.map((w) => w.toLowerCase()).filter((w) => !stop.has(w) && w.length >= 4))]
+          .sort((a, b) => b.length - a.length)
+          .slice(0, 2);
+        const targetSet = new Set(cands);
+        if (!targetSet.size && words.length) targetSet.add(words.reduce((a, b) => (b.length > a.length ? b : a), '').toLowerCase());
+        return String(sentence || '').replace(/[A-Za-z]+/g, (w) => targetSet.has(w.toLowerCase()) ? (w[0] + '_'.repeat(w.length - 1)) : w);
+      }
+
+      function findLoadedClipForSentence(sentence) {
+        if (!state.loaded || !state.segments.length) return -1;
+        const needle = normSentenceKey(sentence);
+        for (let i = 0; i < state.segments.length; i++) {
+          const k = normSentenceKey(state.segments[i].text || '');
+          if (k && (k.includes(needle) || needle.includes(k))) return i;
+        }
+        return -1;
+      }
+
+      function updateReviewBadge() {
+        const today = todayIso();
+        const dueCount = Object.values(state.reviewState.cards || {}).filter((c) => (c.next_due || today) <= today).length;
+        $('toggleReviewBtn').textContent = `1-3-7 复习 (${dueCount})`;
+      }
+
+      function triggerFlashcardPulse() {
+        const box = $('flashcardBox');
+        if (!box) return;
+        box.classList.remove('fc-pulse');
+        void box.offsetWidth;
+        box.classList.add('fc-pulse');
+      }
+
+      function renderReviewDashboard() {
+        const today = todayIso();
+        const cards = Object.values(state.reviewState.cards || {});
+        const due = cards.filter((c) => (c.next_due || today) <= today);
+        const todayCards = cards.filter((c) => c.studied_date === today);
+        const mastered = cards.filter((c) => (c.box || 1) >= 3);
+        const stubborn = cards.filter((c) => (c.lapses || 0) > 0).sort((a, b) => (b.lapses || 0) - (a.lapses || 0)).slice(0, 5);
+
+        $('rvTotal').textContent = String(cards.length);
+        $('rvDue').textContent = String(due.length);
+        $('rvMastered').textContent = String(mastered.length);
+        $('rvStubbornCount').textContent = String(stubborn.length);
+        $('rvSyncGhBtn').classList.toggle('hidden', !isGhConfigured());
+
+        // Dynamic active mode tab highlighting & live counts
+        $('rvStartDueBtn').textContent = `今日待刷 (${due.length})`;
+        $('rvStartTodayBtn').textContent = `当晚回炉 (${todayCards.length})`;
+        $('rvStartNowBtn').textContent = '提前抽查 (弱项)';
+
+        $('rvStartDueBtn').className = state.reviewMode === 'due' ? 'btn-sm btn-primary' : 'btn-sm';
+        $('rvStartTodayBtn').className = state.reviewMode === 'today' ? 'btn-sm btn-amber' : 'btn-sm';
+        $('rvStartNowBtn').className = state.reviewMode === 'now' ? 'btn-sm btn-purple' : 'btn-sm';
+        $('kpiDueBtn').classList.toggle('kpi-active', state.reviewMode === 'due');
+        $('kpiStubbornBtn').classList.toggle('kpi-active', state.reviewMode === 'now');
+
+        const wrap = $('rvStubbornWrap');
+        const list = $('rvStubbornList');
+        wrap.classList.toggle('hidden', stubborn.length === 0);
+        list.innerHTML = '';
+        for (const c of stubborn) {
+          const el = document.createElement('div');
+          el.className = 'review-item has-err';
+          const les = c.lesson !== null && c.lesson !== undefined ? `L${c.lesson}` : 'NOTE';
+          el.innerHTML = `
+            <div class="review-top">
+              <div><span class="badge badge-core">${escHtml(les)}</span> <span class="badge badge-miss">卡壳 ${c.lapses} 次</span></div>
+              <span class="muted">下次: ${escHtml(c.next_due || today)}</span>
+            </div>
+            <div style="font-weight:700;color:#ffffff;">${escHtml(c.sentence)}</div>
+            ${c.zh ? `<div class="muted">${escHtml(c.zh)}</div>` : ''}
+          `;
+          list.appendChild(el);
+        }
+        renderFlashcard();
+      }
+
+      function startReviewSession(mode = 'due', announce = false) {
+        const m = typeof mode === 'boolean' ? (mode ? 'now' : 'due') : mode;
+        state.reviewMode = m;
+        const today = todayIso();
+        const allCards = Object.values(state.reviewState.cards || {});
+        const dueTotal = allCards.filter((c) => (c.next_due || today) <= today).length;
+
+        if (m === 'today') {
+          const pool = Object.entries(state.reviewState.cards || {})
+            .filter(([, c]) => c.studied_date === today)
+            .sort(([, a], [, b]) => ((b.lapses || 0) - (a.lapses || 0)) || ((a.lesson || 999) - (b.lesson || 999)));
+          state.reviewQueue = pool.slice(0, 10).map(([k]) => k);
+        } else {
+          state.reviewQueue = getDueCards(m === 'now', 8).map(([k]) => k);
+        }
+        state.reviewPos = 0;
+        state.reviewRevealed = false;
+        state.reviewSessionStats = { passed: 0, failed: 0 };
+        renderReviewDashboard();
+
+        if (announce) {
+          triggerFlashcardPulse();
+          const box = $('flashcardBox');
+          if (box && typeof box.scrollIntoView === 'function') {
+            box.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+          }
+          const n = state.reviewQueue.length;
+          if (m === 'due') {
+            if (n > 0) setStatus(`已开启「今日待刷」：本轮抽取 ${n} 句（共 ${dueTotal} 句到期，直接刷下方闪卡）`, 'ok');
+            else setStatus('「今日待刷」已全部清空！可点「当晚回炉」或「提前抽查」。', 'ok');
+          } else if (m === 'today') {
+            if (n > 0) setStatus(`已开启「当晚回炉」：本轮抽取 ${n} 句今日新学`, 'ok');
+            else setStatus('今天还没有新学入队的词条，可先点「今日待刷」复习旧课。', 'warn');
+          } else {
+            if (n > 0) setStatus(`已开启「提前抽查」：按弱项优先抽取 ${n} 句`, 'info');
+            else setStatus('复习库目前为空，请先学完一课或在下方批量导入课号。', 'warn');
+          }
+        }
+      }
+
+      function renderFlashcard() {
+        const modeLabel = state.reviewMode === 'today' ? '当晚回炉' : (state.reviewMode === 'now' ? '提前抽查' : '今日待刷');
+        if (!state.reviewQueue.length) {
+          const total = Object.keys(state.reviewState.cards || {}).length;
+          $('fcProgress').textContent = `${modeLabel} · 0 句`;
+          $('fcBadges').innerHTML = '';
+          $('fcPromptArea').innerHTML = total === 0
+            ? '<span style="font-size:16px;color:#cbd5e1;">复习库目前为空。完成任意一课听写/收藏，或在下方输入课号（如 1-11）一键导入黄金句！</span>'
+            : (state.reviewMode === 'today'
+              ? '<span style="font-size:16px;color:#fde68a;">今天还没有新入队的词条。先在下方输入今日课号入队，或完成本课听写/模糊词记录！</span>'
+              : '<span style="font-size:16px;color:#86efac;">今日待刷已全部清空！睡前可点「当晚回炉」或「提前抽查」。</span>');
+          $('fcAnswerArea').classList.add('hidden');
+          $('fcFrontActions').classList.add('hidden');
+          $('fcBackActions').classList.add('hidden');
+          return;
+        }
+        if (state.reviewPos >= state.reviewQueue.length) {
+          const { passed, failed } = state.reviewSessionStats;
+          const today = todayIso();
+          const dueLeft = Object.values(state.reviewState.cards || {}).filter((c) => (c.next_due || today) <= today).length;
+          $('fcProgress').textContent = `${modeLabel} · 本轮 5 分钟提取完成`;
+          $('fcBadges').innerHTML = '<span class="badge badge-ok">DONE</span>';
+          const leftHint = dueLeft > 0
+            ? `<div class="muted" style="font-size:13px;margin-top:6px;">剩余 ${dueLeft} 句到期（每天刷 1 轮 8 句即可；想继续可再点上方「今日待刷」抽取下一批新卡）。</div>`
+            : '<div class="muted" style="font-size:13px;margin-top:6px;">今日所有到期句已全部清空！</div>';
+          $('fcPromptArea').innerHTML = `<span style="font-size:18px;color:#86efac;">已完成本轮 ${state.reviewQueue.length} 句提取！秒过 ${passed} 句，回炉明天再战 ${failed} 句。</span>${leftHint}`;
+          $('fcAnswerArea').classList.add('hidden');
+          $('fcFrontActions').classList.add('hidden');
+          $('fcBackActions').classList.add('hidden');
+          return;
+        }
+
+        const key = state.reviewQueue[state.reviewPos];
+        const card = (state.reviewState.cards || {})[key];
+        if (!card) {
+          state.reviewPos++;
+          renderFlashcard();
+          return;
+        }
+        const box = card.box || 1;
+        const nextBox = Math.min(5, box + 1);
+        const les = card.lesson !== null && card.lesson !== undefined ? `L${card.lesson}` : 'NOTE';
+        $('fcProgress').textContent = `${modeLabel} · 第 ${state.reviewPos + 1} / ${state.reviewQueue.length} 句`;
+        const tagBadges = (card.tags || []).map((t) => {
+          const cls = t === 'MISS' || t === 'STUCK' ? 'badge-miss' : (t === 'STAR' ? 'badge-star' : (t === 'TRAP' ? 'badge-trap' : 'badge-gold'));
+          return `<span class="badge ${cls}">${escHtml(t)}</span>`;
+        }).join('');
+        $('fcBadges').innerHTML = `<span class="badge badge-core">${escHtml(les)}</span><span class="badge badge-offline">${box}阶 (+${REVIEW_INTERVALS[box] || 1}天)</span>${tagBadges}`;
+
+        if (card.zh) {
+          $('fcPromptArea').innerHTML = `<div class="muted" style="font-size:12px;margin-bottom:4px;">3 秒内脱口说出英文：</div>${escHtml(card.zh)}`;
+        } else {
+          const mw = card.missed_words || [];
+          const lbl = mw.length ? '错词精准填空（补全你当时听错的词并整句读出）：' : '关键词填空（补全挖空词并整句读出）：';
+          $('fcPromptArea').innerHTML = `<div class="muted" style="font-size:12px;margin-bottom:4px;">${lbl}</div>${escHtml(makeClozeHint(card.sentence, mw))}`;
+        }
+
+        const clipIdx = findLoadedClipForSentence(card.sentence);
+        $('fcPlayClipBtn').classList.toggle('hidden', clipIdx < 0);
+        $('fcPlayClipBtn').dataset.clipIdx = String(clipIdx);
+
+        $('fcAnswerArea').classList.toggle('hidden', !state.reviewRevealed);
+        $('fcFrontActions').classList.toggle('hidden', state.reviewRevealed);
+        $('fcBackActions').classList.toggle('hidden', !state.reviewRevealed);
+
+        if (state.reviewRevealed) {
+          $('fcAnswerEn').textContent = card.sentence;
+          const notes = [];
+          if (card.note) notes.push(`<div><strong>要点：</strong>${escHtml(card.note)}</div>`);
+          if (card.grammar) notes.push(`<div><strong>语法：</strong>${escHtml(card.grammar)}</div>`);
+          $('fcAnswerNote').classList.toggle('hidden', notes.length === 0);
+          $('fcAnswerNote').innerHTML = notes.join('');
+          $('fcPassBtn').textContent = (state.reviewMode === 'today' && box === 1)
+            ? '3秒秒过 -> 锁入明日 1阶'
+            : `3秒秒过 -> 升${nextBox}阶 (+${REVIEW_INTERVALS[nextBox]}天)`;
+        }
+      }
+
+      function gradeCurrentFlashcard(passed) {
+        if (state.reviewPos >= state.reviewQueue.length) return;
+        const key = state.reviewQueue[state.reviewPos];
+        const card = (state.reviewState.cards || {})[key];
+        if (!card) {
+          state.reviewPos++;
+          state.reviewRevealed = false;
+          renderReviewDashboard();
+          return;
+        }
+        const today = todayIso();
+        const box = card.box || 1;
+        if (passed) {
+          if (state.reviewMode === 'today' && box === 1) {
+            card.box = 1;
+            card.next_due = addDaysIso(today, 1);
+          } else {
+            const newBox = Math.min(5, box + 1);
+            card.box = newBox;
+            card.next_due = addDaysIso(today, REVIEW_INTERVALS[newBox]);
+          }
+          state.reviewSessionStats.passed++;
+        } else {
+          card.box = 1;
+          card.next_due = addDaysIso(today, 1);
+          card.lapses = (card.lapses || 0) + 1;
+          state.reviewSessionStats.failed++;
+        }
+        card.reviews = (card.reviews || 0) + 1;
+        card.last_reviewed = today;
+        saveReviewStateLocal();
+        state.reviewPos++;
+        state.reviewRevealed = false;
+        renderReviewDashboard();
+        if (state.reviewPos >= state.reviewQueue.length) {
+          const { passed: p, failed: f } = state.reviewSessionStats;
+          setStatus(`本轮 ${state.reviewQueue.length} 句完成（秒过 ${p} / 回炉 ${f}）！记得点「同步 GitHub」保存进度。`, 'ok');
+        }
+      }
+
+      // --- LRC / SRT Client-Side Parser ---
+      function stripTitleSegments(segs) {
+        if (segs.length > 1 && segs[0].text && TITLE_RE.test(segs[0].text.trim())) {
+          return segs.slice(1);
+        }
+        return segs;
+      }
+
+      function parseLrc(text, duration) {
+        const events = [];
+        const lines = text.replace(/^\uFEFF/, '').split(/\r?\n/);
+        for (const line of lines) {
+          const matches = [...line.matchAll(/\[(\d+):(\d+(?:\.\d+)?)\]/g)];
+          if (!matches.length) continue;
+          const clean = line.replace(/\[\d+:\d+(?:\.\d+)?\]/g, '').trim();
+          for (const m of matches) {
+            const t = parseInt(m[1], 10) * 60 + parseFloat(m[2]);
+            events.push({ t, text: clean });
+          }
+        }
+        events.sort((a, b) => a.t - b.t);
+        const segs = [];
+        for (let i = 0; i < events.length; i++) {
+          const { t: st, text: txt } = events[i];
+          if (!txt) continue;
+          let en = i + 1 < events.length ? events[i + 1].t : duration;
+          if (duration > 0) en = Math.min(duration, en);
+          if (en > st + 0.05) segs.push({ start: st, end: en, text: txt });
+        }
+        return stripTitleSegments(segs);
+      }
+
+      function parseSrtTs(ts) {
+        const parts = ts.replace(',', '.').split(':');
+        return parseInt(parts[0], 10) * 3600 + parseInt(parts[1], 10) * 60 + parseFloat(parts[2]);
+      }
+
+      function parseSrt(text, duration) {
+        const blocks = text.replace(/^\uFEFF/, '').trim().split(/\r?\n\r?\n+/);
+        const segs = [];
+        for (const blk of blocks) {
+          const lines = blk.split(/\r?\n/).map((l) => l.trim()).filter(Boolean);
+          const tsIdx = lines.findIndex((l) => l.includes('-->'));
+          if (tsIdx < 0) continue;
+          const m = lines[tsIdx].match(/(\d+:\d+:\d+[.,]\d+)\s*-->\s*(\d+:\d+:\d+[.,]\d+)/);
+          if (!m) continue;
+          const st = parseSrtTs(m[1]);
+          let en = parseSrtTs(m[2]);
+          if (duration > 0) en = Math.min(duration, en);
+          const txt = lines.slice(tsIdx + 1).join(' ').trim();
+          if (en > st + 0.05 && txt) segs.push({ start: st, end: en, text: txt });
+        }
+        return stripTitleSegments(segs);
+      }
+
+      function matchCuratedSentences(filename, segments, serverCurated) {
+        let rawEntry = serverCurated && (serverCurated.sentences || serverCurated.grammar) ? serverCurated : null;
+        const db = activeCuratedDb();
+        if (!rawEntry && db) {
+          const m = filename.match(/(nce[1-4]).*?(\d+)\.[^.]+$/i);
+          if (m) {
+            rawEntry = db[`${m[1].toLowerCase()}:${parseInt(m[2], 10)}`] || null;
+          } else {
+            const m2 = filename.match(/(?:^|[^0-9])(\d{1,3})\.[^.]+$/);
+            if (m2) rawEntry = db[`nce1:${parseInt(m2[1], 10)}`] || null;
+          }
+        }
+        const meta = {};
+        const matched = {};
+        if (!rawEntry) return { matched, meta };
+        if (rawEntry.grammar) meta.grammar = rawEntry.grammar;
+        if (rawEntry.priority) meta.priority = rawEntry.priority;
+        const entries = Array.isArray(rawEntry) ? rawEntry : (rawEntry.sentences || []);
+        for (const entry of entries) {
+          const needle = (entry.match || '').toLowerCase().trim();
+          if (!needle) continue;
+          for (let i = 0; i < segments.length; i++) {
+            if (segments[i].text && segments[i].text.toLowerCase().includes(needle)) {
+              matched[i] = entry;
+              break;
+            }
+          }
+        }
+        return { matched, meta };
+      }
+
+      // --- Word-Level Red-Pen Diff ---
+      function tokenizeForDiff(text) {
+        const tokens = [];
+        const re = /___+|[A-Za-z0-9]+(?:['’.-][A-Za-z0-9]+)*/g;
+        let m;
+        while ((m = re.exec(text || '')) !== null) {
+          const raw = m[0];
+          if (raw.startsWith('___')) {
+            tokens.push([raw, '___']);
+            continue;
+          }
+          let norm = raw.toLowerCase().replace(/’/g, "'").replace(/^[.\-']+|[.\-']+$/g, '');
+          norm = NUM_EQUIV[norm] || norm;
+          norm = SPELLING_EQUIV[norm] || norm;
+          if (norm) tokens.push([raw, norm]);
+        }
+        return tokens;
+      }
+
+      function diffSentence(typed, ref) {
+        const tToks = tokenizeForDiff(typed);
+        const rToks = tokenizeForDiff(ref);
+        const n = rToks.length;
+        const m = tToks.length;
+
+        const dp = Array.from({ length: n + 1 }, () => new Uint16Array(m + 1));
+        for (let i = n - 1; i >= 0; i--) {
+          for (let j = m - 1; j >= 0; j--) {
+            dp[i][j] = rToks[i][1] === tToks[j][1]
+              ? dp[i + 1][j + 1] + 1
+              : (dp[i + 1][j] >= dp[i][j + 1] ? dp[i + 1][j] : dp[i][j + 1]);
+          }
+        }
+
+        const anchors = [];
+        let i = 0, j = 0;
+        while (i < n && j < m) {
+          if (rToks[i][1] === tToks[j][1]) { anchors.push([i, j]); i++; j++; }
+          else if (dp[i + 1][j] >= dp[i][j + 1]) i++;
+          else j++;
+        }
+        anchors.push([n, m]);
+
+        const htmlParts = [];
+        const mdParts = [];
+        const missedNorms = new Set();
+        let matched = 0, errors = 0, rPrev = 0, tPrev = 0;
+
+        for (const [rCur, tCur] of anchors) {
+          if (rCur > rPrev && tCur > tPrev) {
+            const rChunk = rToks.slice(rPrev, rCur).map((x) => x[0]).join(' ');
+            const tChunk = tToks.slice(tPrev, tCur).map((x) => x[0]).join(' ');
+            for (let k = rPrev; k < rCur; k++) missedNorms.add(rToks[k][1]);
+            errors += Math.max(rCur - rPrev, tCur - tPrev);
+            htmlParts.push(`<span class="diff-rep">[${escHtml(tChunk)} -> ${escHtml(rChunk)}]</span>`);
+            mdParts.push(`**~~${tChunk}~~ → ${rChunk}**`);
+          } else if (rCur > rPrev) {
+            const rChunk = rToks.slice(rPrev, rCur).map((x) => x[0]).join(' ');
+            for (let k = rPrev; k < rCur; k++) missedNorms.add(rToks[k][1]);
+            errors += rCur - rPrev;
+            htmlParts.push(`<span class="diff-miss">[漏: ${escHtml(rChunk)}]</span>`);
+            mdParts.push(`**[漏: ${rChunk}]**`);
+          } else if (tCur > tPrev) {
+            const tChunk = tToks.slice(tPrev, tCur).map((x) => x[0]).join(' ');
+            errors += tCur - tPrev;
+            htmlParts.push(`<span class="diff-ins">[-多: ${escHtml(tChunk)}]</span>`);
+            mdParts.push(`~~${tChunk}~~`);
+          }
+          if (rCur < n && tCur < m) {
+            matched += 1;
+            const w = rToks[rCur][0];
+            htmlParts.push(`<span class="diff-ok">${escHtml(w)}</span>`);
+            mdParts.push(w);
+            rPrev = rCur + 1;
+            tPrev = tCur + 1;
+          }
+        }
+        return { matched, refTotal: n, errors, isPerfect: errors === 0 && n > 0, html: htmlParts.join(' '), md: mdParts.join(' '), missedNorms };
+      }
+
+      function computeAllDiffs() {
+        const diffs = [];
+        let totMatched = 0, totRef = 0, errSents = 0;
+        for (let i = 0; i < state.segments.length; i++) {
+          const typed = (state.dictationLines[i] || '').trim();
+          const ref = (state.segments[i].text || '').trim();
+          if (typed && ref) {
+            const d = diffSentence(typed, ref);
+            diffs.push(d);
+            totMatched += d.matched;
+            totRef += d.refTotal;
+            if (!d.isPerfect) errSents++;
+          } else {
+            diffs.push(null);
+          }
+        }
+        return { diffs, totMatched, totRef, errSents };
+      }
+
+      function highlightMissedInSpotlight(refText, missedNorms) {
+        if (!refText) return '(无参考文本)';
+        if (!missedNorms || missedNorms.size === 0) return escHtml(refText);
+        const tokenRe = /[A-Za-z0-9]+(?:['’.-][A-Za-z0-9]+)*/g;
+        let out = '', last = 0, m;
+        while ((m = tokenRe.exec(refText)) !== null) {
+          if (m.index > last) out += escHtml(refText.slice(last, m.index));
+          const word = m[0];
+          let norm = word.toLowerCase().replace(/’/g, "'").replace(/^[.\-']+|[.\-']+$/g, '');
+          norm = NUM_EQUIV[norm] || norm;
+          norm = SPELLING_EQUIV[norm] || norm;
+          out += missedNorms.has(norm) ? `<span class="spot-miss-word">${escHtml(word)}</span>` : escHtml(word);
+          last = m.index + word.length;
+        }
+        if (last < refText.length) out += escHtml(refText.slice(last));
+        return out;
+      }
+
+      // --- Session Persistence ---
+      function storageKey() {
+        return state.audioName ? `english_lab_session::${state.audioName}` : null;
+      }
+
+      function saveSessionLocal() {
+        const key = storageKey();
+        if (!key) return;
+        try {
+          localStorage.setItem(key, JSON.stringify({
+            dictationLines: state.dictationLines,
+            playCounts: state.playCounts,
+            bookmarks: [...state.bookmarks],
+            speed: state.speed,
+            loopGapIdx: state.loopGapIdx,
+            updatedAt: new Date().toISOString(),
+          }));
+        } catch (_) {}
+      }
+
+      function restoreSessionLocal() {
+        const key = storageKey();
+        if (!key) return;
+        try {
+          const data = JSON.parse(localStorage.getItem(key) || 'null');
+          if (!data) return;
+          if (Array.isArray(data.dictationLines) && data.dictationLines.length === state.segments.length) state.dictationLines = data.dictationLines;
+          if (Array.isArray(data.playCounts) && data.playCounts.length === state.segments.length) state.playCounts = data.playCounts;
+          if (Array.isArray(data.bookmarks)) state.bookmarks = new Set(data.bookmarks.filter((i) => i >= 0 && i < state.segments.length));
+          if (typeof data.speed === 'number' && SPEEDS.includes(data.speed)) state.speed = data.speed;
+          if (typeof data.loopGapIdx === 'number' && data.loopGapIdx >= 0 && data.loopGapIdx < LOOP_GAPS.length) state.loopGapIdx = data.loopGapIdx;
+        } catch (_) {}
+      }
+
+      // --- Audio Playback Engine ---
+      function applySpeed() {
+        audioEl.playbackRate = state.speed;
+        if ('preservesPitch' in audioEl) audioEl.preservesPitch = true;
+        if ('webkitPreservesPitch' in audioEl) audioEl.webkitPreservesPitch = true;
+      }
+
+      function stopAudio({ keepFullPause = false } = {}) {
+        if (state.loopTimerId) { clearTimeout(state.loopTimerId); state.loopTimerId = null; }
+        if (keepFullPause && state.playMode === 'full') state.fullPausedAt = audioEl.currentTime;
+        else if (!keepFullPause) state.fullPausedAt = null;
+        state.playMode = 'idle';
+        state.playStopAt = null;
+        audioEl.pause();
+      }
+
+      function safeSeekAndPlay(startSec, onStarted) {
+        applySpeed();
+        const doPlay = () => {
+          try { audioEl.currentTime = Math.max(0, startSec); } catch (_) {}
+          const p = audioEl.play();
+          if (p && typeof p.catch === 'function') {
+            p.catch((err) => setStatus(`音频播放被浏览器拦截，请再轻点一次播放按钮 (${err.message || err})`));
+          }
+          if (onStarted) onStarted();
+        };
+        if (audioEl.readyState >= 1) doPlay();
+        else {
+          const onMeta = () => { audioEl.removeEventListener('loadedmetadata', onMeta); doPlay(); };
+          audioEl.addEventListener('loadedmetadata', onMeta);
+          audioEl.load();
+        }
+      }
+
+      function playSegment(index, { countPlay = true, isLoop = false, triggerTimer = true } = {}) {
+        if (!state.loaded || !state.segments.length) return;
+        if (triggerTimer) ensureTimerStarted();
+        const idx = Math.max(0, Math.min(state.segments.length - 1, index));
+        state.idx = idx;
+        const seg = state.segments[idx];
+        const prevSeg = idx > 0 ? state.segments[idx - 1] : null;
+        const nextSeg = idx + 1 < state.segments.length ? state.segments[idx + 1] : null;
+        stopAudio();
+
+        if (countPlay && state.stepIdx === 1) {
+          state.playCounts[idx] = (state.playCounts[idx] || 0) + 1;
+          saveSessionLocal();
+        }
+
+        // Anti-bleed & clean attack compensation for iOS Safari / HTML5 <audio> buffer flush latency:
+        // - Safe 50ms pre-roll when preceded by silence prevents clipping initial consonants (e.g. "Here").
+        // - Tight back-to-back sentences (gap < 0.15s) stop 110ms early so pause flush lands BEFORE next word!
+        const prevGap = prevSeg ? (seg.start - prevSeg.end) : 1.0;
+        const nextGap = nextSeg ? (nextSeg.start - seg.end) : 1.0;
+        const startAt = prevGap >= 0.12 ? Math.max(0, seg.start - 0.05) : seg.start;
+        const stopLead = nextGap < 0.15 ? 0.11 : 0.025;
+
+        state.playMode = 'sentence';
+        state.playStopAt = Math.max(startAt + 0.15, seg.end - stopLead);
+        safeSeekAndPlay(startAt);
+
+        const plays = state.playCounts[idx] || 0;
+        if (state.stepIdx === 1 && plays > 2) {
+          setStatus(`提示：第 ${idx + 1} 句已听 ${plays} 遍（限时听写建议 <=2 遍，听不出先点「不会填 ___」跳过！）`);
+        } else if (isLoop) {
+          setStatus(`单句循环跟读：第 ${idx + 1}/${state.segments.length} 句（播完留白 ${LOOP_GAPS[state.loopGapIdx]}s 给你模仿）`);
+        } else {
+          setStatus(`正在播放第 ${idx + 1}/${state.segments.length} 句（${fmtTime(seg.start)} - ${fmtTime(seg.end)}）`);
+        }
+        renderCurrentStep();
+      }
+
+      function playFull(startFrom = null) {
+        if (!state.loaded || !state.segments.length) return;
+        ensureTimerStarted();
+        state.loopEnabled = false;
+        stopAudio();
+        const startSec = startFrom !== null ? Math.max(0, startFrom) : (state.segments[0].start || 0);
+        if (startFrom === null) state.idx = 0;
+        state.playMode = 'full';
+        state.playStopAt = null;
+        safeSeekAndPlay(startSec);
+        setStatus(startFrom === null ? '正在从头整篇播放（可随时点击「暂停」或「继续播放」）...' : `从 ${fmtTime(startSec)} 继续整篇播放...`);
+        renderCurrentStep();
+      }
+
+      function pausePlayback() {
+        if (state.playMode === 'full') {
+          stopAudio({ keepFullPause: true });
+          setStatus(`已暂停在 ${fmtTime(state.fullPausedAt)}（点击「继续播放」从断点续播）。`);
+        } else {
+          state.loopEnabled = false;
+          stopAudio();
+          setStatus('已暂停播放。');
+        }
+        renderCurrentStep();
+      }
+
+      function continuePlayback() {
+        if (state.fullPausedAt !== null) playFull(state.fullPausedAt);
+        else if (state.stepIdx === 0) playFull(null);
+        else playSegment(state.idx, { countPlay: false });
+      }
+
+      function checkAudioBoundary() {
+        if (!state.loaded) return;
+        const cur = audioEl.currentTime || 0;
+        if (state.playMode === 'sentence' && state.playStopAt !== null) {
+          if (cur >= state.playStopAt || audioEl.ended) {
+            audioEl.pause();
+            if (state.loopEnabled && state.stepIdx === 3) {
+              const gap = LOOP_GAPS[state.loopGapIdx];
+              state.playMode = 'loop_wait';
+              setStatus(`轮到你大声跟读！循环留白 ${gap}s 后自动重播...`);
+              showToast(`轮到你跟读（留白 ${gap}s）`, 'info', Math.max(700, Math.round(gap * 1000) - 100));
+              state.loopTimerId = setTimeout(() => {
+                if (state.loopEnabled && state.stepIdx === 3 && state.playMode === 'loop_wait') {
+                  playSegment(state.idx, { countPlay: false, isLoop: true });
+                }
+              }, Math.round(gap * 1000));
+            } else {
+              state.playMode = 'idle';
+              state.playStopAt = null;
+            }
+          }
+        } else if (state.playMode === 'full') {
+          $('seekBar').value = String(cur);
+          $('fullTimeCur').textContent = fmtMMSS(cur);
+          let active = state.idx;
+          for (let i = 0; i < state.segments.length; i++) {
+            if (cur >= state.segments[i].start - 0.05 && cur <= state.segments[i].end + 0.15) {
+              active = i;
+              break;
+            }
+          }
+          if (active !== state.idx) {
+            state.idx = active;
+            $('fullSentIndicator').textContent = `第 ${String(active + 1).padStart(2, '0')} / ${String(state.segments.length).padStart(2, '0')} 句（盲听隐藏原文）`;
+            if (state.stepIdx === 3) renderStep4();
+          }
+        }
+      }
+
+      function rafMonitor() {
+        checkAudioBoundary();
+        requestAnimationFrame(rafMonitor);
+      }
+      requestAnimationFrame(rafMonitor);
+      setInterval(checkAudioBoundary, 15);
+
+      audioEl.addEventListener('ended', () => {
+        if (state.playMode === 'full') {
+          state.playMode = 'idle';
+          state.fullPausedAt = null;
+          setStatus('整篇播放完毕！可点击「进入 Step 2：8 分钟限时听写」。');
+        } else if (state.playMode === 'sentence') {
+          if (state.loopEnabled && state.stepIdx === 3) {
+            const gap = LOOP_GAPS[state.loopGapIdx];
+            state.playMode = 'loop_wait';
+            state.loopTimerId = setTimeout(() => {
+              if (state.loopEnabled && state.stepIdx === 3 && state.playMode === 'loop_wait') {
+                playSegment(state.idx, { countPlay: false, isLoop: true });
+              }
+            }, Math.round(gap * 1000));
+          } else {
+            state.playMode = 'idle';
+            state.playStopAt = null;
+          }
+        }
+      });
+
+      // --- Stage Countdown Timer (Auto-Start on First Action + Reset) ---
+      function renderTimer() {
+        const el = $('timerDisplay');
+        el.textContent = fmtMMSS(state.timerSecLeft);
+        el.classList.remove('warn', 'done');
+        if (state.timerSecLeft <= 0) el.classList.add('done');
+        else if (state.timerSecLeft <= 30) el.classList.add('warn');
+        $('timerToggleBtn').textContent = state.timerRunning ? '暂停' : (state.timerHasStarted ? '继续' : '计时');
+      }
+
+      function resetTimerForStep(stepIdx) {
+        stopTimer();
+        state.timerHasStarted = false;
+        state.timerSecLeft = STEP_MINUTES[stepIdx] * 60;
+        renderTimer();
+      }
+
+      function stopTimer() {
+        state.timerRunning = false;
+        if (state.timerIntervalId) { clearInterval(state.timerIntervalId); state.timerIntervalId = null; }
+        renderTimer();
+      }
+
+      function startTimer() {
+        if (state.timerRunning) return;
+        if (state.timerSecLeft <= 0) state.timerSecLeft = STEP_MINUTES[state.stepIdx] * 60;
+        state.timerRunning = true;
+        state.timerHasStarted = true;
+        renderTimer();
+        state.timerIntervalId = setInterval(() => {
+          state.timerSecLeft = Math.max(0, state.timerSecLeft - 1);
+          renderTimer();
+          if (state.timerSecLeft === 0) {
+            stopTimer();
+            playBeep();
+            setStatus(`本阶段（Step ${state.stepIdx + 1}）倒计时结束！请果断进入下一阶段，不要超时。`);
+          }
+        }, 1000);
+      }
+
+      function ensureTimerStarted() {
+        if (!state.timerHasStarted && !state.timerRunning) startTimer();
+      }
+
+      function toggleTimer() {
+        if (state.timerRunning) stopTimer();
+        else startTimer();
+      }
+
+      // --- Key Sentences, Generic/Custom AI Prompt & Markdown Export ---
+      function getKeySentenceItems(diffs) {
+        const items = [];
+        for (let i = 0; i < state.segments.length; i++) {
+          const tags = [];
+          const meta = state.curated[i] || null;
+          if (state.bookmarks.has(i)) tags.push({ cls: 'badge-star', label: 'STAR 自选' });
+          if (meta) tags.push(meta.type === 'golden' ? { cls: 'badge-gold', label: 'GOLD 黄金句' } : { cls: 'badge-trap', label: 'TRAP 疑难句' });
+          const d = diffs[i];
+          if (d && !d.isPerfect) tags.push({ cls: 'badge-miss', label: 'MISS 错词' });
+          else if ((state.playCounts[i] || 0) >= 3) tags.push({ cls: 'badge-miss', label: `STUCK ${state.playCounts[i]}遍` });
+          if (tags.length) items.push({ idx: i, tags, meta });
+        }
+        return items;
+      }
+
+      function buildMarkdownReport() {
+        const now = new Date();
+        const pad = (n) => String(n).padStart(2, '0');
+        const dateStr = `${now.getFullYear()}-${pad(now.getMonth() + 1)}-${pad(now.getDate())} ${pad(now.getHours())}:${pad(now.getMinutes())}`;
+        const filled = state.dictationLines.filter((x) => (x || '').trim());
+        const { diffs, totMatched, totRef, errSents } = computeAllDiffs();
+        const accStr = totRef > 0 ? `${((totMatched / totRef) * 100).toFixed(1)}% (${totMatched}/${totRef} 词)` : 'N/A';
+
+        const lines = [
+          `# 听写稿：${state.audioName}`,
+          '',
+          `- **日期**：${dateStr}`,
+          `- **切句引擎**：\`${state.sourceLabel}\``,
+          `- **完成句数**：${filled.length} / ${state.segments.length} 句`,
+        ];
+        if (state.lessonMeta.grammar) {
+          const coreTag = state.lessonMeta.priority === 'core' ? ' [CORE 重点课]' : '';
+          lines.push(`- **本课语法核心${coreTag}**：${state.lessonMeta.grammar}`);
+        }
+        if (totRef > 0) lines.push(`- **自动红笔准确率**：**${accStr}**（含错/漏句数：${errSents}）`);
+        lines.push('');
+
+        const keyItems = getKeySentenceItems(diffs);
+        if (keyItems.length) {
+          lines.push('## 今日卡壳句 + 重点句（可直接复制给 AI 语音教练）', '');
+          for (const item of keyItems) {
+            const seg = state.segments[item.idx];
+            const txt = seg.text || (state.dictationLines[item.idx] || '').trim() || '(无文本)';
+            const tagStr = item.tags.map((t) => t.label).join(' / ');
+            let ln = `- **[${String(item.idx + 1).padStart(2, '0')}]** \`${txt}\` — *${tagStr}*`;
+            if (item.meta) ln += `  \n  译：${item.meta.zh || ''}｜${item.meta.note || ''}`;
+            lines.push(ln);
+          }
+          lines.push('');
+        }
+        if (filled.length) lines.push('## 纯文本听写版', '', '```text', ...filled.map((x) => x.trim()), '```', '');
+        lines.push(
+          '## 逐句明细与红笔诊断',
+          '',
+          '| 句号 | 音频区间 | 重播 | 你的听写 | 参考原声 | 红笔诊断 |',
+          '| :---: | :---: | :---: | :--- | :--- | :--- |'
+        );
+        for (let i = 0; i < state.segments.length; i++) {
+          const seg = state.segments[i];
+          const typed = (state.dictationLines[i] || '').trim() || '*(未写)*';
+          const plays = state.playCounts[i] || 0;
+          const flag = plays > 2 ? ' [>2]' : '';
+          const refTxt = seg.text || '';
+          const d = diffs[i];
+          const grade = d ? (d.isPerfect ? 'OK' : d.md) : '*(未听写)*';
+          lines.push(`| ${String(i + 1).padStart(2, '0')} | \`${fmtTime(seg.start)}-${fmtTime(seg.end)}\` | ${plays} 遍${flag} | ${typed} | ${refTxt} | ${grade} |`);
+        }
+        lines.push('');
+        return lines.join('\n');
+      }
+
+      function getSelectedAiInstruction() {
+        const presets = state.profile.scenario_presets || [];
+        const sel = $('scenarioPresetSelect');
+        if (presets.length && sel && sel.value) {
+          const found = presets.find((p) => p.id === sel.value);
+          if (found && found.instruction) return found.instruction;
+        }
+        return state.profile.ai_context || DEFAULT_PROFILE.ai_context;
+      }
+
+      function buildAiCoachPrompt() {
+        const { diffs } = computeAllDiffs();
+        const keyItems = getKeySentenceItems(diffs);
+        const lines = [`今天我刚练完 ${state.audioName}。`];
+        if (state.lessonMeta.grammar) lines.push(`本课语法重点：${state.lessonMeta.grammar}`);
+        lines.push(getSelectedAiInstruction());
+        if (keyItems.length) {
+          for (const item of keyItems) {
+            const txt = state.segments[item.idx].text || (state.dictationLines[item.idx] || '').trim();
+            const tags = item.tags.map((t) => t.label).join('/');
+            lines.push(`- [${tags}] ${txt}`);
+          }
+        } else {
+          lines.push('- (请围绕本课核心句型与我进行 5 分钟盲听情景口语抽查)');
+        }
+        return lines.join('\n');
+      }
+
+      function buildReviewAiPrompt() {
+        const chosen = getDueCards(true, 6);
+        const lines = ['【1-3-7 旧课回炉句】', getSelectedAiInstruction()];
+        if (!chosen.length) {
+          lines.push('- (复习库暂无词条)');
+        } else {
+          for (const [, c] of chosen) {
+            const les = c.lesson !== null && c.lesson !== undefined ? `L${c.lesson}` : 'NOTE';
+            const zh = c.zh ? `（${c.zh}）` : '';
+            lines.push(`- [${les} | Box${c.box || 1}] ${c.sentence}${zh}`);
+          }
+        }
+        return lines.join('\n');
+      }
+
+      async function toggleBookmark(idx) {
+        const seg = state.segments[idx];
+        const sentence = (seg && seg.text) || (state.dictationLines[idx] || '').trim() || '(无文本)';
+        const meta = state.curated[idx];
+        const srcTag = `${state.audioName} #${String(idx + 1).padStart(2, '0')} ${fmtTime(seg.start)}`;
+        if (state.bookmarks.has(idx)) {
+          state.bookmarks.delete(idx);
+          setStatus(`已取消第 ${idx + 1} 句的 STAR 收藏。`, 'info');
+        } else {
+          state.bookmarks.add(idx);
+          upsertReviewCard(sentence, {
+            lesson: state.lessonNum,
+            source: srcTag,
+            tag: 'STAR',
+            zh: meta ? (meta.zh || '') : '',
+            note: meta ? (meta.note || '') : '',
+            grammar: state.lessonMeta.grammar || '',
+            dueOffsetDays: 1,
+          });
+          saveReviewStateLocal();
+          setStatus(`已收藏第 ${idx + 1} 句并加入 1-3-7 复习队列！`, 'ok');
+          if (state.serverAvailable) {
+            try {
+              await fetch('/api/bookmark', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ sentence, source: srcTag }),
+              });
+              setStatus(`已收藏第 ${idx + 1} 句并同步写入本地书库！`, 'ok');
+            } catch (_) {}
+          } else if (isGhConfigured()) {
+            const ok = await appendSentenceToGitHubBank(sentence, srcTag);
+            if (ok) setStatus(`已收藏第 ${idx + 1} 句，并同步写入 GitHub 词库与 1-3-7 队列！`, 'ok');
+          }
+        }
+        saveSessionLocal();
+        renderCurrentStep();
+      }
+
+      // --- Rendering ---
+      function renderPersonalizationUi() {
+        // Update top mode badge
+        const badge = $('modeBadge');
+        if (state.serverAvailable) {
+          badge.textContent = 'LOCAL SERVER';
+          badge.className = 'badge badge-lan';
+        } else if (isGhConfigured()) {
+          badge.textContent = 'GITHUB SYNCED';
+          badge.className = 'badge badge-gh';
+        } else {
+          badge.textContent = 'OFFLINE PWA';
+          badge.className = 'badge badge-offline';
+        }
+
+        // Fill settings fields
+        $('ghRepoInput').value = state.gh.repo || '';
+        $('ghBranchInput').value = state.gh.branch || 'main';
+        $('ghTokenInput').value = state.gh.token || '';
+        $('profileFocusInput').value = state.profile.focus_title || '';
+        $('profileAiContextInput').value = state.profile.ai_context || '';
+        $('saveProfileGhBtn').classList.toggle('hidden', !isGhConfigured());
+        $('saveGhReportBtn').classList.toggle('hidden', !isGhConfigured());
+        $('rvSyncGhBtn').classList.toggle('hidden', !isGhConfigured());
+
+        // Focus strip (only visible if user configured personal focus or GitHub)
+        const hasFocus = Boolean(state.profile.focus_title || isGhConfigured());
+        $('focusBanner').classList.toggle('hidden', !hasFocus);
+        const namePrefix = state.profile.display_name ? `[${state.profile.display_name}] ` : '';
+        $('focusBannerText').textContent = state.profile.focus_title
+          ? `${namePrefix}${state.profile.focus_title}`
+          : `已连接私有库：${state.gh.repo}`;
+        $('quickSyncBtn').classList.toggle('hidden', !isGhConfigured());
+
+        // Scenario presets selector in Step 5
+        const presets = state.profile.scenario_presets || [];
+        const wrap = $('scenarioPresetWrap');
+        const sel = $('scenarioPresetSelect');
+        wrap.classList.toggle('hidden', presets.length === 0);
+        sel.innerHTML = '';
+        for (const p of presets) {
+          const opt = document.createElement('option');
+          opt.value = p.id;
+          opt.textContent = p.label;
+          sel.appendChild(opt);
+        }
+
+        if (isGhConfigured() && $('ghSyncStatus').textContent.startsWith('未连接')) {
+          $('ghSyncStatus').textContent = `已配置 ${state.gh.repo} (${state.gh.branch || 'main'}) — 点击「连接并拉取」或「同步」。`;
+        }
+        updateReviewBadge();
+      }
+
+      function renderSpeedPills(containerId) {
+        const box = $(containerId);
+        box.innerHTML = '<span class="muted" style="margin-right: 4px;">语速:</span>';
+        for (const sp of SPEEDS) {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          btn.className = `speed-pill${Math.abs(state.speed - sp) < 0.01 ? ' active' : ''}`;
+          btn.textContent = `${sp.toFixed(2).replace(/0$/, '')}x`;
+          btn.addEventListener('click', () => {
+            state.speed = sp;
+            applySpeed();
+            saveSessionLocal();
+            renderSpeedPills('speedRow1');
+            renderSpeedPills('speedRow4');
+            setStatus(`语速已切换为 ${sp}x`);
+          });
+          box.appendChild(btn);
+        }
+      }
+
+      function renderLessonHeader() {
+        $('lessonBar').classList.remove('hidden');
+        $('stepTabs').classList.remove('hidden');
+        $('lessonTitle').textContent = state.audioName;
+        $('lessonSub').textContent = `${state.segments.length} 句 | 总长 ${fmtMMSS(state.duration)} | ${state.sourceLabel}`;
+        const gStrip = $('grammarStrip');
+        if (state.lessonMeta.grammar && state.stepIdx >= 2) {
+          gStrip.classList.remove('hidden');
+          const coreHtml = state.lessonMeta.priority === 'core'
+            ? '<span class="badge badge-core">CORE 重点课</span>'
+            : '<span class="badge badge-offline">GRAMMAR</span>';
+          gStrip.innerHTML = `${coreHtml}<span>${escHtml(state.lessonMeta.grammar)}</span>`;
+        } else {
+          gStrip.classList.add('hidden');
+        }
+      }
+
+      function renderStep1() {
+        $('seekBar').max = String(Math.max(1, state.duration));
+        $('fullTimeDur').textContent = fmtMMSS(state.duration);
+        $('fullTimeCur').textContent = fmtMMSS(audioEl.currentTime || 0);
+        $('fullSentIndicator').textContent = `第 ${String(state.idx + 1).padStart(2, '0')} / ${String(state.segments.length).padStart(2, '0')} 句（盲听隐藏原文）`;
+        renderSpeedPills('speedRow1');
+      }
+
+      function renderStep2() {
+        const seg = state.segments[state.idx];
+        const plays = state.playCounts[state.idx] || 0;
+        $('dictSentLabel').textContent = `第 ${String(state.idx + 1).padStart(2, '0')} / ${String(state.segments.length).padStart(2, '0')} 句`;
+        $('dictSentTime').textContent = seg ? `${fmtTime(seg.start)} - ${fmtTime(seg.end)}` : '';
+        const badge = $('dictPlayBadge');
+        badge.textContent = `已听 ${plays}/2 遍`;
+        badge.className = `badge ${plays > 2 ? 'badge-miss' : (plays > 0 ? 'badge-core' : 'badge-offline')}`;
+
+        const inp = $('dictInput');
+        if (inp.value !== (state.dictationLines[state.idx] || '')) inp.value = state.dictationLines[state.idx] || '';
+
+        const grid = $('dictChipGrid');
+        grid.innerHTML = '';
+        state.segments.forEach((_, i) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const cls = ['sent-chip'];
+          if ((state.dictationLines[i] || '').trim()) cls.push('filled');
+          if ((state.playCounts[i] || 0) >= 3) cls.push('stuck');
+          if (i === state.idx) cls.push('current');
+          btn.className = cls.join(' ');
+          btn.textContent = String(i + 1).padStart(2, '0');
+          btn.addEventListener('click', () => {
+            state.dictationLines[state.idx] = $('dictInput').value;
+            saveSessionLocal();
+            playSegment(i, { countPlay: true });
+          });
+          grid.appendChild(btn);
+        });
+      }
+
+      function renderStep3() {
+        const { diffs, totMatched, totRef, errSents } = computeAllDiffs();
+        if (totRef > 0) {
+          $('reviewAcc').textContent = `${((totMatched / totRef) * 100).toFixed(1)}%`;
+          $('reviewDetail').textContent = `命中 ${totMatched}/${totRef} 词 | 错/漏句数：${errSents} 句`;
+        } else {
+          $('reviewAcc').textContent = '--';
+          $('reviewDetail').textContent = '暂无听写记录（可直接点「显示全部」查看参考原声与重点句）';
+        }
+        $('toggleErrOnlyBtn').textContent = state.reviewErrorsOnly ? '当前: 仅看错句 (切全部)' : '当前: 显示全部 (切错句)';
+
+        const list = $('reviewList');
+        list.innerHTML = '';
+        let shownCount = 0;
+        for (let i = 0; i < state.segments.length; i++) {
+          const d = diffs[i];
+          const hasErr = d !== null && !d.isPerfect;
+          if (state.reviewErrorsOnly && totRef > 0 && !hasErr) continue;
+          shownCount++;
+
+          const seg = state.segments[i];
+          const meta = state.curated[i];
+          const isStar = state.bookmarks.has(i);
+          const item = document.createElement('div');
+          item.className = `review-item ${d ? (d.isPerfect ? 'is-ok' : 'has-err') : ''}`;
+
+          const badges = [];
+          if (d && d.isPerfect) badges.push('<span class="badge badge-ok">OK 全对</span>');
+          if (hasErr) badges.push(`<span class="badge badge-miss">MISS ${d.errors}处</span>`);
+          if (meta) badges.push(meta.type === 'golden' ? '<span class="badge badge-gold">GOLD 黄金句</span>' : '<span class="badge badge-trap">TRAP 疑难句</span>');
+          if (isStar) badges.push('<span class="badge badge-star">STAR</span>');
+
+          const diffHtml = d ? d.html : `<span class="muted">*(未听写)*</span> ${escHtml(seg.text || '')}`;
+          item.innerHTML = `
+            <div class="review-top">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <strong style="font-family:var(--font-mono);">#${String(i + 1).padStart(2, '0')}</strong>
+                <span class="muted" style="font-family:var(--font-mono);">${fmtTime(seg.start)}-${fmtTime(seg.end)}</span>
+                ${badges.join('')}
+              </div>
+              <div style="display:flex;gap:6px;">
+                <button class="btn-sm btn-primary" data-play="${i}" type="button">播本句</button>
+                <button class="btn-sm ${isStar ? 'btn-purple' : ''}" data-star="${i}" type="button">${isStar ? '已STAR' : 'STAR'}</button>
+              </div>
+            </div>
+            <div class="diff-line">${diffHtml}</div>
+            ${seg.text ? `<div class="ref-sub"><strong>原声：</strong>${escHtml(seg.text)}</div>` : ''}
+            ${meta ? `<div class="note-box"><strong>译：</strong>${escHtml(meta.zh || '')}<br /><strong>注：</strong>${escHtml(meta.note || '')}</div>` : ''}
+          `;
+          list.appendChild(item);
+        }
+        if (shownCount === 0) {
+          list.innerHTML = '<div class="card" style="text-align:center;color:#86efac;">全部听写句零错误！可切「显示全部」查看重点句笔记，或直接进入 Step 4 跟读。</div>';
+        }
+        list.querySelectorAll('[data-play]').forEach((btn) => btn.addEventListener('click', () => playSegment(parseInt(btn.dataset.play, 10), { countPlay: false })));
+        list.querySelectorAll('[data-star]').forEach((btn) => btn.addEventListener('click', () => toggleBookmark(parseInt(btn.dataset.star, 10))));
+      }
+
+      function renderStep4() {
+        const i = state.idx;
+        const seg = state.segments[i];
+        const prevSeg = i > 0 ? state.segments[i - 1] : null;
+        const nextSeg = i + 1 < state.segments.length ? state.segments[i + 1] : null;
+        const { diffs } = computeAllDiffs();
+        const d = diffs[i];
+        const meta = state.curated[i];
+        const isStar = state.bookmarks.has(i);
+
+        $('spotCounter').textContent = `${String(i + 1).padStart(2, '0')} / ${String(state.segments.length).padStart(2, '0')}`;
+        $('spotTimeBadge').textContent = seg ? `${fmtTime(seg.start)} - ${fmtTime(seg.end)}` : '';
+
+        const badges = [];
+        if (meta) badges.push(meta.type === 'golden' ? '<span class="badge badge-gold">GOLD 黄金句</span>' : '<span class="badge badge-trap">TRAP 疑难句</span>');
+        if (isStar) badges.push('<span class="badge badge-star">STAR 自选</span>');
+        if (d && !d.isPerfect) badges.push(`<span class="badge badge-miss">MISS ${d.errors}处</span>`);
+        $('spotBadges').innerHTML = badges.join('');
+
+        $('spotBody').classList.toggle('hidden', !state.showSpotText);
+        $('spotHiddenBox').classList.toggle('hidden', state.showSpotText);
+        $('toggleSpotTextBtn').textContent = state.showSpotText ? '隐藏原文' : '显示原文';
+        $('spotBookmarkBtn').className = isStar ? 'btn-sm btn-purple' : 'btn-sm';
+        $('spotBookmarkBtn').textContent = isStar ? '已收藏 STAR' : '收藏 STAR';
+
+        $('spotPrev').textContent = prevSeg && prevSeg.text ? `上句: ${prevSeg.text}` : '';
+        $('spotPrev').classList.toggle('hidden', !(prevSeg && prevSeg.text));
+        $('spotMain').innerHTML = highlightMissedInSpotlight(seg ? seg.text : '', d ? d.missedNorms : null);
+        $('spotNext').textContent = nextSeg && nextSeg.text ? `下句: ${nextSeg.text}` : '';
+        $('spotNext').classList.toggle('hidden', !(nextSeg && nextSeg.text));
+
+        const noteParts = [];
+        if (meta && state.showSpotText) {
+          noteParts.push(`<div><strong>译：</strong>${escHtml(meta.zh || '')}</div>`);
+          if (meta.note) noteParts.push(`<div><strong>要点：</strong>${escHtml(meta.note)}</div>`);
+        }
+        if (d && !d.isPerfect && state.showSpotText) {
+          noteParts.push(`<div><strong>你的听写：</strong><span style="color:#fda4af;">${escHtml(state.dictationLines[i])}</span></div>`);
+        }
+        $('spotNoteBox').classList.toggle('hidden', noteParts.length === 0);
+        $('spotNoteBox').innerHTML = noteParts.join('');
+
+        $('shadLoopBtn').textContent = state.loopEnabled ? '单句循环: ON' : '单句循环: OFF';
+        $('shadLoopBtn').className = state.loopEnabled ? 'btn-purple' : '';
+        $('shadGapBtn').textContent = state.loopEnabled
+          ? `循环留白: ${LOOP_GAPS[state.loopGapIdx]}s`
+          : `循环留白: ${LOOP_GAPS[state.loopGapIdx]}s (循环时生效)`;
+        $('shadGapBtn').style.opacity = state.loopEnabled ? '1' : '0.72';
+        renderSpeedPills('speedRow4');
+
+        const grid = $('shadChipGrid');
+        grid.innerHTML = '';
+        state.segments.forEach((_, k) => {
+          const btn = document.createElement('button');
+          btn.type = 'button';
+          const cls = ['sent-chip'];
+          if (state.curated[k] || state.bookmarks.has(k)) cls.push('stuck');
+          if (k === state.idx) cls.push('current');
+          btn.className = cls.join(' ');
+          btn.textContent = String(k + 1).padStart(2, '0');
+          btn.addEventListener('click', () => playSegment(k, { countPlay: false, isLoop: state.loopEnabled }));
+          grid.appendChild(btn);
+        });
+      }
+
+      function renderStep5() {
+        const { diffs } = computeAllDiffs();
+        const items = getKeySentenceItems(diffs);
+        $('keyCountBadge').textContent = `${items.length} 句`;
+        $('saveServerReportBtn').classList.toggle('hidden', !state.serverAvailable);
+        $('saveGhReportBtn').classList.toggle('hidden', !isGhConfigured());
+
+        const list = $('keyList');
+        list.innerHTML = '';
+        if (!items.length) {
+          list.innerHTML = '<div class="card muted" style="text-align:center;">本课暂无卡壳或标记句。可在 Step 3/4 点击 STAR 收藏任意黄金句。</div>';
+          return;
+        }
+        for (const item of items) {
+          const seg = state.segments[item.idx];
+          const txt = seg.text || (state.dictationLines[item.idx] || '').trim() || '(无文本)';
+          const el = document.createElement('div');
+          el.className = 'review-item';
+          el.innerHTML = `
+            <div class="review-top">
+              <div style="display:flex;align-items:center;gap:6px;flex-wrap:wrap;">
+                <strong style="font-family:var(--font-mono);">#${String(item.idx + 1).padStart(2, '0')}</strong>
+                ${item.tags.map((t) => `<span class="badge ${t.cls}">${escHtml(t.label)}</span>`).join('')}
+              </div>
+              <button class="btn-sm btn-primary" data-play-key="${item.idx}" type="button">播本句</button>
+            </div>
+            <div style="font-size:18px;font-weight:700;color:#ffffff;">${escHtml(txt)}</div>
+            ${item.meta ? `<div class="note-box"><strong>译：</strong>${escHtml(item.meta.zh || '')}<br /><strong>注：</strong>${escHtml(item.meta.note || '')}</div>` : ''}
+          `;
+          list.appendChild(el);
+        }
+        list.querySelectorAll('[data-play-key]').forEach((btn) => btn.addEventListener('click', () => playSegment(parseInt(btn.dataset.playKey, 10), { countPlay: false })));
+      }
+
+      function renderCurrentStep() {
+        if (!state.loaded) return;
+        renderLessonHeader();
+        document.querySelectorAll('.step-tab').forEach((tab) => {
+          tab.classList.toggle('active', parseInt(tab.dataset.step, 10) === state.stepIdx);
+        });
+        for (let s = 0; s < 5; s++) $(`stepPanel${s}`).classList.toggle('hidden', s !== state.stepIdx);
+        if (state.stepIdx === 0) renderStep1();
+        else if (state.stepIdx === 1) renderStep2();
+        else if (state.stepIdx === 2) renderStep3();
+        else if (state.stepIdx === 3) renderStep4();
+        else if (state.stepIdx === 4) renderStep5();
+      }
+
+      function switchStep(newStep) {
+        if (state.stepIdx === 1 && state.loaded) {
+          state.dictationLines[state.idx] = $('dictInput').value;
+          saveSessionLocal();
+        }
+        if (newStep === 2 || newStep === 4) {
+          harvestLessonToReview();
+        }
+        if (newStep !== 3) state.loopEnabled = false;
+        if (newStep === 3) state.idx = 0; // Entering Step 4 shadowing always starts from sentence #01
+        stopAudio();
+        state.stepIdx = newStep;
+        resetTimerForStep(newStep);
+        renderCurrentStep();
+      }
+
+      // --- Loading Lessons ---
+      function activateLesson({ audioName, audioUrl, duration, segments, sourceLabel, serverCurated }) {
+        stopAudio();
+        state.loaded = true;
+        state.audioName = audioName;
+        state.lessonNum = extractLessonNum(audioName);
+        state.duration = duration || (segments.length ? segments[segments.length - 1].end : 0);
+        state.segments = segments.length ? segments : [{ start: 0, end: Math.max(1, state.duration), text: '' }];
+        state.sourceLabel = sourceLabel;
+        state.idx = 0;
+        state.stepIdx = 0;
+        state.loopEnabled = false;
+        state.dictationLines = new Array(state.segments.length).fill('');
+        state.playCounts = new Array(state.segments.length).fill(0);
+        state.bookmarks = new Set();
+
+        const { matched, meta } = matchCuratedSentences(audioName, state.segments, serverCurated);
+        state.curated = matched;
+        state.lessonMeta = meta;
+
+        restoreSessionLocal();
+
+        audioEl.src = audioUrl;
+        audioEl.load();
+        applySpeed();
+
+        audioEl.onloadedmetadata = () => {
+          if (audioEl.duration && isFinite(audioEl.duration)) {
+            state.duration = audioEl.duration;
+            if (state.segments.length === 1 && !state.segments[0].text) state.segments[0].end = state.duration;
+            renderLessonHeader();
+            if (state.stepIdx === 0) renderStep1();
+          }
+        };
+
+        setTopDrawer(null);
+        resetTimerForStep(0);
+        renderCurrentStep();
+        setStatus(`已加载 ${audioName}（${state.segments.length} 句，匹配 ${Object.keys(state.curated).length} 条重点句）。点击「从头整篇播」开始盲听！`);
+      }
+
+      async function probeServer() {
+        const ctrl = new AbortController();
+        const tid = setTimeout(() => ctrl.abort(), 1400);
+        try {
+          const res = await fetch('/api/health', { signal: ctrl.signal, cache: 'no-store' });
+          clearTimeout(tid);
+          if (!res.ok) throw new Error('not ok');
+          const j = await res.json();
+          if (!j.ok) throw new Error('invalid');
+          state.serverAvailable = true;
+          $('sourceTabsBar').classList.remove('hidden');
+          setSourceTab('server');
+          renderPersonalizationUi();
+          await loadServerLibraries();
+          return;
+        } catch (_) {
+          clearTimeout(tid);
+        }
+        // Clean standalone mode: hide LAN server tab completely!
+        state.serverAvailable = false;
+        $('sourceTabsBar').classList.add('hidden');
+        $('serverPanel').classList.add('hidden');
+        $('localPanel').classList.remove('hidden');
+        renderPersonalizationUi();
+      }
+
+      function setSourceTab(mode) {
+        state.sourceMode = mode;
+        $('tabServer').classList.toggle('active', mode === 'server');
+        $('tabLocal').classList.toggle('active', mode === 'local');
+        $('serverPanel').classList.toggle('hidden', mode !== 'server');
+        $('localPanel').classList.toggle('hidden', mode !== 'local');
+      }
+
+      async function loadServerLibraries() {
+        const res = await fetch('/api/libraries', { cache: 'no-store' });
+        const data = await res.json();
+        state.libraries = data.libraries || [];
+        const libSel = $('libSelect');
+        libSel.innerHTML = '';
+        for (const lib of state.libraries) {
+          const opt = document.createElement('option');
+          opt.value = lib.key;
+          opt.textContent = `[${lib.key}] ${lib.label} (${lib.files.length})`;
+          if (lib.key === data.default_library) opt.selected = true;
+          libSel.appendChild(opt);
+        }
+        populateLessonSelect();
+      }
+
+      function populateLessonSelect() {
+        const libKey = $('libSelect').value;
+        const filter = $('lessonFilter').value.trim().toLowerCase();
+        const lib = state.libraries.find((l) => l.key === libKey);
+        const sel = $('lessonSelect');
+        sel.innerHTML = '';
+        if (!lib) return;
+        const files = lib.files.filter((f) => !filter || f.name.toLowerCase().includes(filter));
+        for (const f of files) {
+          const opt = document.createElement('option');
+          opt.value = f.name;
+          opt.textContent = `${f.has_lrc ? '[LRC] ' : ''}${f.name}`;
+          sel.appendChild(opt);
+        }
+      }
+
+      async function loadSelectedServerLesson() {
+        const libKey = $('libSelect').value;
+        const fileName = $('lessonSelect').value;
+        if (!libKey || !fileName) return;
+        setStatus(`正在加载 ${fileName}...`);
+        $('loadServerBtn').disabled = true;
+        try {
+          const url = `/api/segments/${encodeURIComponent(libKey)}/${encodeURIComponent(fileName)}`;
+          const res = await fetch(url, { cache: 'no-store' });
+          const data = await res.json();
+          if (!res.ok || data.error) throw new Error(data.error || `HTTP ${res.status}`);
+          activateLesson({
+            audioName: data.file || fileName,
+            audioUrl: `/api/audio/${encodeURIComponent(libKey)}/${encodeURIComponent(fileName)}`,
+            duration: data.duration,
+            segments: data.segments || [],
+            sourceLabel: data.source || 'LAN',
+            serverCurated: data.curated || null,
+          });
+        } catch (err) {
+          setStatus(`加载失败：${err.message || err}`);
+        } finally {
+          $('loadServerBtn').disabled = false;
+        }
+      }
+
+      function handleLocalFiles(fileList) {
+        const files = Array.from(fileList || []);
+        if (!files.length) return;
+        const audioMap = new Map();
+        const subMap = new Map();
+        for (const f of files) {
+          const stem = f.name.replace(/\.[^.]+$/, '').toLowerCase();
+          if (AUDIO_EXT_RE.test(f.name)) audioMap.set(stem, f);
+          else if (SUB_EXT_RE.test(f.name)) subMap.set(stem, f);
+        }
+        if (!audioMap.size) {
+          setStatus('未检测到音频文件（.mp3 / .m4a / .wav 等），请重新选择并同时勾选音频与同名 .lrc。');
+          return;
+        }
+        for (const p of state.localPairs) { if (p.objectUrl) URL.revokeObjectURL(p.objectUrl); }
+        const pairs = [];
+        for (const [stem, audioFile] of [...audioMap.entries()].sort((a, b) => a[0].localeCompare(b[0]))) {
+          pairs.push({ stem, name: audioFile.name, audioFile, subFile: subMap.get(stem) || null, objectUrl: URL.createObjectURL(audioFile) });
+        }
+        state.localPairs = pairs;
+        const sel = $('localPlaylistSelect');
+        sel.innerHTML = '';
+        pairs.forEach((p, idx) => {
+          const opt = document.createElement('option');
+          opt.value = String(idx);
+          opt.textContent = `${p.subFile ? '[LRC] ' : '[无字幕] '}${p.name}`;
+          sel.appendChild(opt);
+        });
+        $('localPlaylistWrap').classList.toggle('hidden', pairs.length < 2);
+        loadLocalPair(0);
+      }
+
+      async function loadLocalPair(pairIdx) {
+        const pair = state.localPairs[pairIdx];
+        if (!pair) return;
+        const dur = await new Promise((resolve) => {
+          const tmp = document.createElement('audio');
+          tmp.preload = 'metadata';
+          tmp.onloadedmetadata = () => resolve(isFinite(tmp.duration) ? tmp.duration : 0);
+          tmp.onerror = () => resolve(0);
+          tmp.src = pair.objectUrl;
+        });
+        let segments = [];
+        let sourceLabel = '本地音频(无LRC)';
+        if (pair.subFile) {
+          const text = await pair.subFile.text();
+          if (/\.srt$/i.test(pair.subFile.name)) { segments = parseSrt(text, dur); sourceLabel = `SRT(${pair.subFile.name})`; }
+          else { segments = parseLrc(text, dur); sourceLabel = `LRC(${pair.subFile.name})`; }
+        }
+        if (!segments.length) segments = [{ start: 0, end: Math.max(1, dur), text: '' }];
+        activateLesson({
+          audioName: pair.name,
+          audioUrl: pair.objectUrl,
+          duration: dur || segments[segments.length - 1].end,
+          segments,
+          sourceLabel,
+          serverCurated: null,
+        });
+      }
+
+      // --- Wire Top & Drawer Events (Mutually Exclusive Tabs + Active Highlight) ---
+      let activeTopDrawer = 'source';
+      function setTopDrawer(target) {
+        activeTopDrawer = target;
+        $('reviewView').classList.toggle('hidden', target !== 'review');
+        $('sourceDrawer').classList.toggle('hidden', target !== 'source');
+        $('settingsDrawer').classList.toggle('hidden', target !== 'settings');
+
+        $('toggleReviewBtn').className = target === 'review' ? 'btn-sm btn-primary' : 'btn-sm';
+        $('toggleSourceBtn').className = target === 'source' ? 'btn-sm btn-primary' : 'btn-sm';
+        $('toggleSettingsBtn').className = target === 'settings' ? 'btn-sm btn-primary' : 'btn-sm';
+
+        if (target === 'review') {
+          if (state.loaded) harvestLessonToReview();
+          if (!state.reviewQueue.length) startReviewSession('due');
+          else renderReviewDashboard();
+        }
+      }
+
+      $('toggleSourceBtn').addEventListener('click', () => setTopDrawer(activeTopDrawer === 'source' ? null : 'source'));
+      $('toggleSettingsBtn').addEventListener('click', () => setTopDrawer(activeTopDrawer === 'settings' ? null : 'settings'));
+      $('closeSettingsBtn').addEventListener('click', () => setTopDrawer(null));
+      $('toggleReviewBtn').addEventListener('click', () => setTopDrawer(activeTopDrawer === 'review' ? null : 'review'));
+      $('closeReviewBtn').addEventListener('click', () => setTopDrawer(null));
+      $('quickSyncBtn').addEventListener('click', () => runWithBtnBusy($('quickSyncBtn'), '同步中...', async () => {
+        await pullAllFromGitHub();
+        if (isGhConfigured()) await pushReviewStateToGitHub();
+      }));
+
+      // GitHub & Profile Settings
+      $('ghPullBtn').addEventListener('click', () => runWithBtnBusy($('ghPullBtn'), '连接中...', async () => {
+        state.gh.repo = $('ghRepoInput').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '');
+        state.gh.branch = $('ghBranchInput').value.trim() || 'main';
+        state.gh.token = $('ghTokenInput').value.trim();
+        saveGhConfig();
+        renderPersonalizationUi();
+        await pullAllFromGitHub();
+      }));
+      $('ghPushReviewBtn').addEventListener('click', () => runWithBtnBusy($('ghPushReviewBtn'), '同步中...', async () => {
+        state.gh.repo = $('ghRepoInput').value.trim().replace(/^https?:\/\/github\.com\//i, '').replace(/\.git$/i, '');
+        state.gh.branch = $('ghBranchInput').value.trim() || 'main';
+        state.gh.token = $('ghTokenInput').value.trim();
+        saveGhConfig();
+        await pushReviewStateToGitHub();
+      }));
+      $('ghDisconnectBtn').addEventListener('click', () => {
+        if (!confirm('确认断开 GitHub 并清除本机保存的 Token 与定制缓存吗？（本地听写与 1-3-7 进度会保留）')) return;
+        state.gh = { repo: '', branch: 'main', token: '' };
+        state.profile = { ...DEFAULT_PROFILE };
+        state.customCuratedDb = null;
+        localStorage.removeItem(LS_GH);
+        localStorage.removeItem(LS_PROFILE);
+        localStorage.removeItem(LS_CUSTOM_CURATED);
+        $('ghSyncStatus').textContent = '已断开 GitHub，已恢复通用默认模式。';
+        renderPersonalizationUi();
+        if (state.loaded) {
+          const { matched, meta } = matchCuratedSentences(state.audioName, state.segments, null);
+          state.curated = matched;
+          state.lessonMeta = meta;
+          renderCurrentStep();
+        }
+        setStatus('已断开 GitHub 连接，播放器已恢复通用默认设置。');
+      });
+      $('saveProfileLocalBtn').addEventListener('click', () => {
+        state.profile.focus_title = $('profileFocusInput').value.trim();
+        state.profile.ai_context = $('profileAiContextInput').value.trim() || DEFAULT_PROFILE.ai_context;
+        saveProfileLocal();
+        renderPersonalizationUi();
+        setStatus('已保存个人学习风格到本机浏览器。');
+      });
+      $('saveProfileGhBtn').addEventListener('click', async () => {
+        state.profile.focus_title = $('profileFocusInput').value.trim();
+        state.profile.ai_context = $('profileAiContextInput').value.trim() || DEFAULT_PROFILE.ai_context;
+        saveProfileLocal();
+        renderPersonalizationUi();
+        try {
+          await ghPutFile('profile/player-profile.json', JSON.stringify(state.profile, null, 2) + '\n', `chore: update player profile (${todayIso()})`);
+          setStatus('已保存个人学习风格到 GitHub (profile/player-profile.json)！');
+        } catch (err) {
+          setStatus(`保存风格到 GitHub 失败：${err.message || err}`);
+        }
+      });
+
+      // 1-3-7 Review Events
+      $('kpiDueBtn').addEventListener('click', () => startReviewSession('due', true));
+      $('kpiStubbornBtn').addEventListener('click', () => startReviewSession('now', true));
+      $('rvStartDueBtn').addEventListener('click', () => startReviewSession('due', true));
+      $('rvStartTodayBtn').addEventListener('click', () => startReviewSession('today', true));
+      $('rvStartNowBtn').addEventListener('click', () => startReviewSession('now', true));
+      $('fcRevealBtn').addEventListener('click', () => { state.reviewRevealed = true; renderFlashcard(); });
+      $('fcSkipBtn').addEventListener('click', () => { state.reviewPos++; state.reviewRevealed = false; renderFlashcard(); });
+      $('fcPassBtn').addEventListener('click', () => gradeCurrentFlashcard(true));
+      $('fcFailBtn').addEventListener('click', () => gradeCurrentFlashcard(false));
+      $('fcPlayClipBtn').addEventListener('click', () => {
+        const idx = parseInt($('fcPlayClipBtn').dataset.clipIdx || '-1', 10);
+        if (idx >= 0) playSegment(idx, { countPlay: false, triggerTimer: false });
+      });
+      $('rvCopyAiBtn').addEventListener('click', async () => {
+        const ok = await copyText(buildReviewAiPrompt());
+        setStatus(ok ? '已复制 1-3-7 旧课回炉句！直接粘贴到 AI 语音开始实战。' : '复制失败。', ok ? 'ok' : 'err');
+      });
+      $('rvSyncGhBtn').addEventListener('click', () => runWithBtnBusy($('rvSyncGhBtn'), '同步中...', pushReviewStateToGitHub));
+      $('rvSeedTomorrowBtn').addEventListener('click', () => {
+        const n = seedReviewLessons($('rvSeedInput').value, false);
+        $('rvSeedInput').value = '';
+        renderReviewDashboard();
+        setStatus(n > 0 ? `已加入 ${n} 句黄金/疑难句到 1-3-7 队列（明天开始到期抽查）。` : '未新增词条（可能已在队列中或课号无预置数据）。', n > 0 ? 'ok' : 'warn');
+      });
+      $('rvSeedNowBtn').addEventListener('click', () => {
+        const n = seedReviewLessons($('rvSeedInput').value, true);
+        $('rvSeedInput').value = '';
+        startReviewSession(false);
+        setStatus(n > 0 ? `已导入 ${n} 句并立即开始今日主动提取！` : '已开启今日复习队列。', 'ok');
+      });
+      $('rvVocabSaveBtn').addEventListener('click', () => runWithBtnBusy($('rvVocabSaveBtn'), '记录中...', async () => {
+        const word = $('rvVocabWord').value.trim();
+        const meaning = $('rvVocabMeaning').value.trim();
+        if (!word) { setStatus('请先输入不认识的英文生词或短语。', 'warn'); return; }
+        upsertReviewCard(word, {
+          lesson: state.lessonNum,
+          source: state.audioName || 'vocab-note',
+          tag: 'VOCAB',
+          zh: meaning,
+          note: '生词/精准词汇辨析（3秒脱口说出或拼出英文）',
+          dueOffsetDays: 1,
+        });
+        saveReviewStateLocal();
+        $('rvVocabWord').value = '';
+        $('rvVocabMeaning').value = '';
+        renderReviewDashboard();
+        let savedLocal = false;
+        if (state.serverAvailable) {
+          try {
+            const res = await fetch('/api/vocab', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({ word, meaning, source: state.audioName || 'web-vocab' }),
+            });
+            savedLocal = res.ok;
+          } catch (_) {}
+        }
+        if (isGhConfigured()) {
+          await appendVocabToGitHub(word, meaning, state.audioName || 'web-vocab');
+          await pushReviewStateToGitHub();
+          setStatus(`已记录生词「${word}」到 GitHub 生词本，并加入 1-3-7 复习！`, 'ok');
+        } else if (savedLocal) {
+          setStatus(`已写入本地生词本 (logs/vocab-notes.md)，并加入 1-3-7 复习！`, 'ok');
+        } else {
+          setStatus(`已将生词「${word}」加入本机 1-3-7 复习队列！`, 'ok');
+        }
+      }));
+      $('rvExportJsonBtn').addEventListener('click', () => {
+        const blob = new Blob([JSON.stringify(state.reviewState, null, 2) + '\n'], { type: 'application/json' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = `review-state_${todayIso()}.json`;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setStatus(`已导出复习备份 ${a.download}（与 scripts/review.py 完全兼容）。`);
+      });
+      $('rvImportJsonBtn').addEventListener('click', () => $('rvImportFileInput').click());
+      $('rvImportFileInput').addEventListener('change', async (e) => {
+        const f = e.target.files && e.target.files[0];
+        if (!f) return;
+        try {
+          const parsed = JSON.parse(await f.text());
+          state.reviewState = mergeReviewStates(state.reviewState, parsed);
+          saveReviewStateLocal();
+          renderReviewDashboard();
+          setStatus(`已合并导入复习备份，当前共 ${Object.keys(state.reviewState.cards).length} 条复习句！`);
+        } catch (err) {
+          setStatus(`导入失败：${err.message || err}`);
+        }
+      });
+
+      // Source & Playback Events
+      $('tabServer').addEventListener('click', () => setSourceTab('server'));
+      $('tabLocal').addEventListener('click', () => setSourceTab('local'));
+      $('libSelect').addEventListener('change', populateLessonSelect);
+      $('lessonFilter').addEventListener('input', populateLessonSelect);
+      $('loadServerBtn').addEventListener('click', loadSelectedServerLesson);
+      $('pickLocalBtn').addEventListener('click', () => $('localFileInput').click());
+      $('localFileInput').addEventListener('change', (e) => handleLocalFiles(e.target.files));
+      $('loadLocalItemBtn').addEventListener('click', () => loadLocalPair(parseInt($('localPlaylistSelect').value, 10)));
+
+      $('timerToggleBtn').addEventListener('click', toggleTimer);
+      $('timerResetBtn').addEventListener('click', () => resetTimerForStep(state.stepIdx));
+      document.querySelectorAll('.step-tab').forEach((tab) => tab.addEventListener('click', () => switchStep(parseInt(tab.dataset.step, 10))));
+
+      // Step 1
+      $('playFullBtn').addEventListener('click', () => playFull(null));
+      $('pauseBtn1').addEventListener('click', pausePlayback);
+      $('continueBtn1').addEventListener('click', continuePlayback);
+      $('seekBar').addEventListener('input', (e) => {
+        const t = parseFloat(e.target.value);
+        $('fullTimeCur').textContent = fmtMMSS(t);
+        if (state.playMode === 'full') audioEl.currentTime = t;
+        else state.fullPausedAt = t;
+      });
+      $('goStep2Btn').addEventListener('click', () => {
+        switchStep(1);
+        playSegment(0, { countPlay: true });
+        $('dictInput').focus();
+      });
+
+      // Step 2
+      $('dictInput').addEventListener('input', (e) => {
+        ensureTimerStarted();
+        state.dictationLines[state.idx] = e.target.value;
+        saveSessionLocal();
+      });
+      $('dictInput').addEventListener('keydown', (e) => {
+        if (e.key === 'Tab') { e.preventDefault(); playSegment(state.idx, { countPlay: true }); }
+        else if (e.key === 'Enter' && !e.shiftKey) { e.preventDefault(); $('dictNextBtn').click(); }
+      });
+      $('dictReplayBtn').addEventListener('click', () => { playSegment(state.idx, { countPlay: true }); $('dictInput').focus(); });
+      $('dictBlankBtn').addEventListener('click', () => {
+        const inp = $('dictInput');
+        const sep = inp.value && !inp.value.endsWith(' ') ? ' ' : '';
+        inp.value = `${inp.value}${sep}___ `;
+        state.dictationLines[state.idx] = inp.value;
+        saveSessionLocal();
+        inp.focus();
+      });
+      $('dictNextBtn').addEventListener('click', () => {
+        state.dictationLines[state.idx] = $('dictInput').value;
+        saveSessionLocal();
+        if (state.idx + 1 < state.segments.length) {
+          playSegment(state.idx + 1, { countPlay: true });
+          $('dictInput').focus();
+        } else {
+          stopAudio();
+          setStatus(`全部 ${state.segments.length} 句听写完成！点击「完成听写 -> 红笔诊断」立刻批改！`);
+          renderStep2();
+        }
+      });
+      $('dictPrevBtn').addEventListener('click', () => {
+        state.dictationLines[state.idx] = $('dictInput').value;
+        saveSessionLocal();
+        if (state.idx > 0) playSegment(state.idx - 1, { countPlay: true });
+        else setStatus('已经是第 1 句。');
+      });
+      $('dictPauseBtn').addEventListener('click', pausePlayback);
+      $('goStep3Btn').addEventListener('click', () => { switchStep(2); ensureTimerStarted(); });
+
+      // Step 3
+      $('toggleErrOnlyBtn').addEventListener('click', () => { state.reviewErrorsOnly = !state.reviewErrorsOnly; renderStep3(); });
+      $('goStep4Btn').addEventListener('click', () => switchStep(3));
+
+      // Step 4
+      $('toggleSpotTextBtn').addEventListener('click', () => { state.showSpotText = !state.showSpotText; renderStep4(); });
+      $('spotBookmarkBtn').addEventListener('click', () => toggleBookmark(state.idx));
+      $('shadPrevBtn').addEventListener('click', () => { if (state.idx > 0) playSegment(state.idx - 1, { countPlay: false, isLoop: state.loopEnabled }); });
+      $('shadNextBtn').addEventListener('click', () => { if (state.idx + 1 < state.segments.length) playSegment(state.idx + 1, { countPlay: false, isLoop: state.loopEnabled }); });
+      $('shadPlayBtn').addEventListener('click', () => playSegment(state.idx, { countPlay: false, isLoop: state.loopEnabled }));
+      $('shadPauseBtn').addEventListener('click', pausePlayback);
+      $('shadLoopBtn').addEventListener('click', () => {
+        state.loopEnabled = !state.loopEnabled;
+        if (state.loopEnabled) playSegment(state.idx, { countPlay: false, isLoop: true });
+        else stopAudio();
+        renderStep4();
+      });
+      $('shadGapBtn').addEventListener('click', () => {
+        state.loopGapIdx = (state.loopGapIdx + 1) % LOOP_GAPS.length;
+        saveSessionLocal();
+        renderStep4();
+        const g = LOOP_GAPS[state.loopGapIdx];
+        if (state.loopEnabled) {
+          setStatus(`循环留白已设为 ${g} 秒（每遍播完后停顿 ${g} 秒给你大声模仿）。`, 'info');
+        } else {
+          setStatus(`循环留白已设为 ${g} 秒（提示：点左侧「单句循环: ON」后才会按此留白自动重复播放）。`, 'warn');
+        }
+      });
+      $('shadFullBtn').addEventListener('click', () => playFull(null));
+
+      // Step 5
+      $('copyAiBtn').addEventListener('click', async () => {
+        const ok = await copyText(buildAiCoachPrompt());
+        setStatus(ok ? '已复制本课重点句 Prompt！直接切到 AI 语音粘贴即可。' : '复制失败，请手动导出。', ok ? 'ok' : 'err');
+      });
+      $('copyMdBtn').addEventListener('click', async () => {
+        const ok = await copyText(buildMarkdownReport());
+        setStatus(ok ? '已复制完整 Markdown 听写红笔报告！' : '复制失败，请点「导出 Markdown 报告」。', ok ? 'ok' : 'err');
+      });
+      $('downloadMdBtn').addEventListener('click', async () => {
+        const md = buildMarkdownReport();
+        const safe = state.audioName.replace(/\.[^.]+$/, '').replace(/[^A-Za-z0-9_-]+/g, '_');
+        const filename = `${todayIso()}_${safe}.md`;
+        if (typeof File === 'function' && navigator.canShare) {
+          try {
+            const file = new File([md], filename, { type: 'text/markdown;charset=utf-8' });
+            if (navigator.canShare({ files: [file] })) {
+              await navigator.share({ title: filename, files: [file] });
+              setStatus(`已通过系统分享导出 ${filename}（可选择「存储到“文件”」指定目录）。`);
+              return;
+            }
+          } catch (err) {
+            if (err && err.name === 'AbortError') { setStatus('已取消导出。'); return; }
+          }
+        }
+        const blob = new Blob([md], { type: 'text/markdown;charset=utf-8' });
+        const url = URL.createObjectURL(blob);
+        const a = document.createElement('a');
+        a.href = url;
+        a.download = filename;
+        document.body.appendChild(a);
+        a.click();
+        document.body.removeChild(a);
+        setTimeout(() => URL.revokeObjectURL(url), 1000);
+        setStatus(`已下载 ${filename}（手机默认在「文件 -> 下载项」，电脑在 Downloads 目录）。`);
+      });
+      $('saveGhReportBtn').addEventListener('click', () => runWithBtnBusy($('saveGhReportBtn'), '提交中...', pushDictationReportToGitHub));
+      $('saveServerReportBtn').addEventListener('click', async () => {
+        try {
+          const res = await fetch('/api/save-dictation', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ audio_name: state.audioName, markdown: buildMarkdownReport() }),
+          });
+          const data = await res.json();
+          if (!res.ok || !data.ok) throw new Error(data.error || `HTTP ${res.status}`);
+          setStatus(`已保存到本地书库：${data.path}`);
+        } catch (err) {
+          setStatus(`保存失败：${err.message || err}`);
+        }
+      });
+      $('recToggleBtn').addEventListener('click', toggleVoiceRecording);
+      $('recPlayMineBtn').addEventListener('click', playMyRecording);
+      $('recCompareBtn').addEventListener('click', compareOrigAndMine);
+      $('recExportBtn').addEventListener('click', exportMyRecording);
+
+      function setQuickNoteMode(mode) {
+        state.noteMode = mode;
+        $('noteModeSentBtn').className = mode === 'sentence' ? 'btn-sm btn-primary' : 'btn-sm';
+        $('noteModeVocabBtn').className = mode === 'vocab' ? 'btn-sm btn-primary' : 'btn-sm';
+        if (mode === 'vocab') {
+          $('quickNoteEn').placeholder = '不认识的生词 / 模糊词（如：clerk / thirsty / shirt）';
+          $('quickNoteZh').placeholder = '中文意思 / 拼写或对比提示（如：文员 / 口渴的 / 有领扣衬衫）';
+          $('quickNoteSaveBtn').textContent = '记录到生词本并加入 1-3-7 复习队列';
+        } else {
+          $('quickNoteEn').placeholder = '英文原句（如：Could you check if you have half a size up?）';
+          $('quickNoteZh').placeholder = '中文意思 / 场景提示（选填，供 1-3-7 闪卡抽查）';
+          $('quickNoteSaveBtn').textContent = '记录并加入 1-3-7 复习队列';
+        }
+      }
+      $('noteModeSentBtn').addEventListener('click', () => setQuickNoteMode('sentence'));
+      $('noteModeVocabBtn').addEventListener('click', () => setQuickNoteMode('vocab'));
+
+      $('quickNoteSaveBtn').addEventListener('click', () => runWithBtnBusy($('quickNoteSaveBtn'), '记录中...', async () => {
+        const en = $('quickNoteEn').value.trim();
+        const zh = $('quickNoteZh').value.trim();
+        if (!en) {
+          setStatus(state.noteMode === 'vocab' ? '请先输入要记录的英文单词或短语。' : '请先输入要记录的英文句子。', 'warn');
+          return;
+        }
+        const isVocab = state.noteMode === 'vocab';
+        upsertReviewCard(en, {
+          lesson: state.lessonNum,
+          source: state.audioName || (isVocab ? 'vocab-note' : 'personal-note'),
+          tag: isVocab ? 'VOCAB' : 'STAR',
+          zh,
+          note: isVocab ? '生词/精准词汇辨析（3秒脱口说出准确英文词）' : '',
+          dueOffsetDays: 1,
+        });
+        saveReviewStateLocal();
+        $('quickNoteEn').value = '';
+        $('quickNoteZh').value = '';
+        let savedLocal = false;
+        if (state.serverAvailable) {
+          try {
+            const url = isVocab ? '/api/vocab' : '/api/bookmark';
+            const payload = isVocab
+              ? { word: en, meaning: zh, source: state.audioName || 'web-vocab' }
+              : { sentence: en + (zh ? ` = ${zh}` : ''), source: state.audioName || 'web-note' };
+            const res = await fetch(url, {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify(payload),
+            });
+            savedLocal = res.ok;
+          } catch (_) {}
+        }
+        if (isGhConfigured()) {
+          if (isVocab) {
+            await appendVocabToGitHub(en, zh, state.audioName || 'web-vocab');
+          } else {
+            await appendSentenceToGitHubBank(en + (zh ? ` (${zh})` : ''), state.audioName || 'web-note');
+          }
+          await pushReviewStateToGitHub();
+          setStatus(isVocab
+            ? `已记录生词「${en}」到 GitHub 生词本 (logs/vocab-notes.md)，并加入 1-3-7 复习！`
+            : '已记录到你的 GitHub 词库，并加入 1-3-7 复习队列！', 'ok');
+        } else if (savedLocal) {
+          setStatus(isVocab
+            ? `已写入本地生词本 (logs/vocab-notes.md)，并加入 1-3-7 复习队列！`
+            : '已写入本地词库 (logs/sentence-bank.md)，并加入 1-3-7 复习队列！', 'ok');
+        } else {
+          setStatus(isVocab
+            ? `已将生词「${en}」加入本机 1-3-7 复习队列！`
+            : '已保存到本机 1-3-7 复习队列！', 'ok');
+        }
+      }));
+      $('clearLessonBtn').addEventListener('click', () => {
+        if (!confirm(`确定清空 ${state.audioName} 的本地听写记录与重播统计吗？`)) return;
+        state.dictationLines = new Array(state.segments.length).fill('');
+        state.playCounts = new Array(state.segments.length).fill(0);
+        state.bookmarks = new Set();
+        const key = storageKey();
+        if (key) localStorage.removeItem(key);
+        setStatus('已清空本课本地听写缓存，可重新开始盲听写。');
+        renderCurrentStep();
+      });
+
+      // Boot
+      loadStoredMeta();
+      renderPersonalizationUi();
+      renderRecUi();
+      if ('serviceWorker' in navigator && (location.protocol === 'https:' || location.hostname === 'localhost' || location.hostname === '127.0.0.1')) {
+        navigator.serviceWorker.register('./sw.js').catch(() => {});
+      }
+      probeServer();
+    })();
+  </script>
+</body>
+</html>
